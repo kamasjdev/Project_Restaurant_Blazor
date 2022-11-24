@@ -17,7 +17,7 @@ namespace Restaurant.Api.Controllers
         [HttpGet]
         public string Get()
         {
-            return _appOptions.CurrentValue.Name;
+            return _appOptions.CurrentValue.Name ?? "Api";
         }
     }
 }
