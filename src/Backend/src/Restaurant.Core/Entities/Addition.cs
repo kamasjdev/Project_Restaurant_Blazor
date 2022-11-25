@@ -21,10 +21,9 @@ namespace Restaurant.Core.Entities
             _productSaleIds = productSaleIds?.ToList() ?? new List<EntityId>();
         }
 
-        public Addition(EntityId id, AdditionName? additionName, Price? price, string additionKind, IEnumerable<EntityId>? productSaleIds = null)
+        public Addition(EntityId? id, AdditionName? additionName, Price? price, string additionKind, IEnumerable<EntityId>? productSaleIds = null)
             : base(id)
         {
-            Id = id;
             ChangeAdditionName(additionName);
             ChangePrice(price);
             ChangeAdditionKind(additionKind);

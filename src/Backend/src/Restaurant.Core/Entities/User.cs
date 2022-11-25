@@ -3,17 +3,16 @@ using Restaurant.Core.ValueObjects;
 
 namespace Restaurant.Core.Entities
 {
-    public class User
+    public class User : BaseEntity
     {
-        public EntityId Id { get; }
         public Email Email { get; private set; }
         public string Password { get; private set; }
         public string Role { get; private set; }
         public DateTime CreatedAt { get; }
 
         public User(EntityId id, Email email, string password, string role, DateTime createdAt)
+            : base(id)
         {
-            Id = id;
             ChangeEmail(email);
             ChangePassword(password);
             ChangeRole(role);

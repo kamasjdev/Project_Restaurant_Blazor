@@ -3,9 +3,8 @@ using Restaurant.Core.ValueObjects;
 
 namespace Restaurant.Core.Entities
 {
-    public class Order
+    public class Order : BaseEntity
     {
-        public EntityId Id { get; }
         public OrderNumber OrderNumber { get; private set; }
         public DateTime Created { get; }
         public Price Price { get; private set; }
@@ -14,9 +13,9 @@ namespace Restaurant.Core.Entities
         public IEnumerable<ProductSale> Products => _products;
         private IList<ProductSale> _products = new List<ProductSale>();
 
-        public Order(EntityId id, OrderNumber orderNumber, DateTime created, Price price, Email email, string? note = null, IEnumerable<ProductSale>? products = null)
+        public Order(EntityId? id, OrderNumber orderNumber, DateTime created, Price price, Email email, string? note = null, IEnumerable<ProductSale>? products = null)
+            : base(id)
         {
-            Id = id;
             ChangeOrderNumber(orderNumber);
             Created = created;
             ChangePrice(price);

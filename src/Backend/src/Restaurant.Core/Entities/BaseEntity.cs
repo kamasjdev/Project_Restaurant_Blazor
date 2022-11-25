@@ -5,7 +5,7 @@ namespace Restaurant.Core.Entities
 {
     public class BaseEntity
     {
-        public EntityId Id { get; protected set; }
+        public EntityId Id { get; }
 
         public BaseEntity(EntityId? id)
         {

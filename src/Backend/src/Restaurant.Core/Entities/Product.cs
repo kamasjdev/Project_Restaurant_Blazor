@@ -3,9 +3,8 @@ using Restaurant.Core.ValueObjects;
 
 namespace Restaurant.Core.Entities
 {
-    public class Product
+    public class Product : BaseEntity
     {
-        public EntityId Id { get; }
         public ProductName ProductName { get; private set; }
         public Price Price { get; private set; }
         public ProductKind ProductKind { get; private set; }
@@ -16,9 +15,9 @@ namespace Restaurant.Core.Entities
         private IList<EntityId> _productSaleIds = new List<EntityId>();
         public IEnumerable<EntityId> ProductSaleIds => _productSaleIds;
 
-        public Product(EntityId id, ProductName productName, Price price, ProductKind productKind, IEnumerable<Order>? orders = null, IEnumerable<EntityId>? productSaleIds = null)
+        public Product(EntityId? id, ProductName productName, Price price, ProductKind productKind, IEnumerable<Order>? orders = null, IEnumerable<EntityId>? productSaleIds = null)
+            : base(id)
         {
-            Id = id;
             ChangeProductName(productName);
             ChangePrice(price);
             _orders = orders?.ToList() ?? new List<Order>();
@@ -26,9 +25,9 @@ namespace Restaurant.Core.Entities
             _productSaleIds = productSaleIds?.ToList() ?? new List<EntityId>();
         }
 
-        public Product(EntityId id, ProductName productName, Price price, string productKind, IEnumerable<Order>? orders = null, IEnumerable<EntityId>? productSaleIds = null)
+        public Product(EntityId? id, ProductName productName, Price price, string productKind, IEnumerable<Order>? orders = null, IEnumerable<EntityId>? productSaleIds = null)
+            : base(id)
         {
-            Id = id;
             ChangeProductName(productName);
             ChangePrice(price);
             _orders = orders?.ToList() ?? new List<Order>();

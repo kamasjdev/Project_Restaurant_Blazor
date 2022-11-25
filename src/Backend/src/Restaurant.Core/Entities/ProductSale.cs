@@ -3,9 +3,8 @@ using Restaurant.Core.ValueObjects;
 
 namespace Restaurant.Core.Entities
 {
-    public sealed class ProductSale
+    public sealed class ProductSale : BaseEntity
     {
-        public EntityId Id { get; }
         public EntityId ProductId { get; private set; }
         public Product Product { get; private set; }
         public EntityId? AdditionId { get; private set; } = null;
@@ -17,8 +16,8 @@ namespace Restaurant.Core.Entities
         public Email Email { get; private set; }
 
         public ProductSale(EntityId? id, Product? product, ProductSaleState productSaleState, Email email, Addition? addition = null, Order? order = null)
+            : base(id)
         {
-            Id = id;
             ChangeProduct(product);
 
             if (addition != null)
