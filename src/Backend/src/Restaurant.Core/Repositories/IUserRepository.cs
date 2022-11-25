@@ -7,8 +7,8 @@ namespace Restaurant.Core.Repositories
         Task AddAsync(User user);
         Task UpdateAsync(User user);
         Task DeleteAsync(User user);
-        Task<User> GetAsync(Guid id);
-        Task<User> GetAsync(string email);
+        Task<User?> GetAsync(Guid id);
+        Task<User?> GetAsync(string email);
         Task<IEnumerable<User>> GetAllAsync();
     }
 }

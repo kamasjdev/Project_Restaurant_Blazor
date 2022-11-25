@@ -3,7 +3,7 @@ using Restaurant.Core.Repositories;
 
 namespace Restaurant.Infrastructure.Repositories.InMemory
 {
-    internal class InMemoryAdditionRepository : IAdditonRepository
+    internal sealed class InMemoryAdditionRepository : IAdditonRepository
     {
         private readonly List<Addition> _additions = new();
 
