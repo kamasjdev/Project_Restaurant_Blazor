@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using Restaurant.Infrastructure.Exceptions;
 using Restaurant.Infrastructure.Repositories;
 
 namespace Restaurant.Infrastructure
@@ -20,6 +21,7 @@ namespace Restaurant.Infrastructure
                     Version = "v1"
                 });
             });
+            services.AddErrorHandling();
             services.Configure<AppOptions>(configuration.GetRequiredSection("app"));
             services.AddInMemoryRepositories();
             return services;
@@ -34,6 +36,7 @@ namespace Restaurant.Infrastructure
                 swaggerUI.SwaggerEndpoint("/swagger/v1/swagger.json", "Restaurant API v1");
                 swaggerUI.DocumentTitle = "Restaurant API";
             });
+            app.UseErrorHandling();
             app.UseAuthorization();
             app.MapControllers();
             return app;
