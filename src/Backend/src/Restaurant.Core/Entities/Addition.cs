@@ -3,9 +3,8 @@ using Restaurant.Core.ValueObjects;
 
 namespace Restaurant.Core.Entities
 {
-    public class Addition
+    public class Addition : BaseEntity
     {
-        public EntityId Id { get; }
         public AdditionName AdditionName { get; private set; }
         public Price Price { get; private set; }
         public AdditionKind AdditionKind { get; private set; }
@@ -13,16 +12,17 @@ namespace Restaurant.Core.Entities
         private IList<EntityId> _productSaleIds = new List<EntityId>();
         public IEnumerable<EntityId> ProductSaleIds => _productSaleIds;
 
-        public Addition(EntityId id, AdditionName additionName, Price price, AdditionKind additionKind, IEnumerable<EntityId>? productSaleIds = null)
+        public Addition(EntityId? id, AdditionName? additionName, Price? price, AdditionKind additionKind, IEnumerable<EntityId>? productSaleIds = null)
+            : base(id)
         {
-            Id = id;
             ChangeAdditionName(additionName);
             ChangePrice(price);
             AdditionKind = additionKind;
             _productSaleIds = productSaleIds?.ToList() ?? new List<EntityId>();
         }
 
-        public Addition(EntityId id, AdditionName additionName, Price price, string additionKind, IEnumerable<EntityId>? productSaleIds = null)
+        public Addition(EntityId id, AdditionName? additionName, Price? price, string additionKind, IEnumerable<EntityId>? productSaleIds = null)
+            : base(id)
         {
             Id = id;
             ChangeAdditionName(additionName);
@@ -31,13 +31,23 @@ namespace Restaurant.Core.Entities
             _productSaleIds = productSaleIds?.ToList() ?? new List<EntityId>();
         }
 
-        public void ChangeAdditionName(AdditionName additionName)
+        public void ChangeAdditionName(AdditionName? additionName)
         {
+            if (additionName is null)
+            {
+                throw new AdditionNameCannotBeNullException();
+            }
+
             AdditionName = additionName;
         }
 
-        public void ChangePrice(Price price)
+        public void ChangePrice(Price? price)
         {
+            if (price is null)
+            {
+                throw new PriceCannotBeNullException();
+            }
+
             Price = price;
         }
 
