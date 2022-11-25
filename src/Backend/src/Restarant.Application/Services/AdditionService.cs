@@ -44,7 +44,7 @@ namespace Restarant.Application.Services
             return (await _additonRepository.GetAllAsync()).Select(a => a.AsDto());
         }
 
-        public async Task<AdditionDto> GetAsync(Guid id)
+        public async Task<AdditionDto?> GetAsync(Guid id)
         {
             return (await _additonRepository.GetAsync(id))?.AsDto();
         }

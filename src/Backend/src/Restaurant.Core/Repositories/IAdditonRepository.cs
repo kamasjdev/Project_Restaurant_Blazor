@@ -7,7 +7,7 @@ namespace Restaurant.Core.Repositories
         Task AddAsync(Addition addition);
         Task UpdateAsync(Addition addition);
         Task DeleteAsync(Addition addition);
-        Task<Addition> GetAsync(Guid id);
+        Task<Addition?> GetAsync(Guid id);
         Task<IEnumerable<Addition>> GetAllAsync();
     }
 }

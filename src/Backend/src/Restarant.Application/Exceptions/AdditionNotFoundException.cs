@@ -1,6 +1,6 @@
 ﻿namespace Restarant.Application.Exceptions
 {
-    public sealed class AdditionNotFoundException : BussinessException
+    public sealed class AdditionNotFoundException : BusinessException
     {
         public Guid AdditionId { get; }
 
