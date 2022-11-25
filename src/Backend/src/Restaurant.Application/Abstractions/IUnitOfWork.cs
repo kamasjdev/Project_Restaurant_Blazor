@@ -1,6 +1,6 @@
 ﻿using System.Data.Common;
 
-namespace Restarant.Application.Abstractions
+namespace Restaurant.Application.Abstractions
 {
     public interface IUnitOfWork : IDisposable
     {

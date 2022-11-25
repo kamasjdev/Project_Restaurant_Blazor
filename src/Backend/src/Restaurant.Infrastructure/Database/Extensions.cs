@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using MySql.Data.MySqlClient;
-using Restarant.Application.Abstractions;
+using Restaurant.Application.Abstractions;
 using System.Data.Common;
 
 namespace Restaurant.Infrastructure.Database

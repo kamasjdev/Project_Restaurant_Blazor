@@ -1,8 +1,8 @@
 ﻿using NSubstitute;
-using Restarant.Application.Abstractions;
-using Restarant.Application.DTO;
-using Restarant.Application.Exceptions;
-using Restarant.Application.Services;
+using Restaurant.Application.Abstractions;
+using Restaurant.Application.DTO;
+using Restaurant.Application.Exceptions;
+using Restaurant.Application.Services;
 using Restaurant.Core.Entities;
 using Restaurant.Core.Repositories;
 using Restaurant.Core.ValueObjects;

@@ -1,5 +1,5 @@
 ﻿using Humanizer;
-using Restarant.Application.Exceptions;
+using Restaurant.Application.Exceptions;
 using Restaurant.Core.Exceptions;
 using System.Collections.Concurrent;
 using System.Net;

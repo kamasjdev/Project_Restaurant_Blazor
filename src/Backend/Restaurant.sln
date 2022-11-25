@@ -11,7 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{51A21172
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Restaurant.Core", "src\Restaurant.Core\Restaurant.Core.csproj", "{7028FB09-B216-4548-8E5E-7C5DFE3BAD98}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Restarant.Application", "src\Restarant.Application\Restarant.Application.csproj", "{B4C28CE0-F808-4886-95CC-AEC6B32ADA86}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Restarant.Application", "src\Restaurant.Application\Restaurant.Application.csproj", "{B4C28CE0-F808-4886-95CC-AEC6B32ADA86}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Restaurant.Infrastructure", "src\Restaurant.Infrastructure\Restaurant.Infrastructure.csproj", "{A146E90C-FEF6-4E1D-903A-986DB74A06DF}"
 EndProject

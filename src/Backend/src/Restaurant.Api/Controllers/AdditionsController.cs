@@ -1,7 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Restarant.Application.Abstractions;
-using Restarant.Application.DTO;
+﻿using Microsoft.AspNetCore.Mvc;
+using Restaurant.Application.Abstractions;
+using Restaurant.Application.DTO;
 
 namespace Restaurant.Api.Controllers
 {

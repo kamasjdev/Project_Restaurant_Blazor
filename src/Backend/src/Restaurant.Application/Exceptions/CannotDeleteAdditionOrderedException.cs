@@ -1,4 +1,4 @@
-﻿namespace Restarant.Application.Exceptions
+﻿namespace Restaurant.Application.Exceptions
 {
     public sealed class CannotDeleteAdditionOrderedException : BusinessException
     {

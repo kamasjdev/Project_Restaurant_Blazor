@@ -1,4 +1,4 @@
-﻿using Restarant.Application.Abstractions;
+﻿using Restaurant.Application.Abstractions;
 using System.Data.Common;
 
 namespace Restaurant.Infrastructure.Database

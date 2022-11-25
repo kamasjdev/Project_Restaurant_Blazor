@@ -1,4 +1,4 @@
-﻿namespace Restarant.Application.DTO
+﻿namespace Restaurant.Application.DTO
 {
     public class AdditionDto
     {

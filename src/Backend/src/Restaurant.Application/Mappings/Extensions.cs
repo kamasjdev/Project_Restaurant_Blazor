@@ -1,4 +1,4 @@
-﻿using Restarant.Application.DTO;
+﻿using Restaurant.Application.DTO;
 using Restaurant.Core.Entities;
 
 namespace Restarant.Application.Mappings

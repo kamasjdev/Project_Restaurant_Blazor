@@ -1,10 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Restarant.Application.Abstractions;
-using Restarant.Application.Services;
+using Restaurant.Application.Abstractions;
+using Restaurant.Application.Services;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Restaurant.UnitTests")]
-namespace Restarant.Application
+namespace Restaurant.Application
 {
     public static class Extensions
     {

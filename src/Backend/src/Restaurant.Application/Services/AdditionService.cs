@@ -1,10 +1,10 @@
-﻿using Restarant.Application.Abstractions;
-using Restarant.Application.DTO;
-using Restarant.Application.Exceptions;
+﻿using Restaurant.Application.Abstractions;
+using Restaurant.Application.DTO;
+using Restaurant.Application.Exceptions;
 using Restarant.Application.Mappings;
 using Restaurant.Core.Repositories;
 
-namespace Restarant.Application.Services
+namespace Restaurant.Application.Services
 {
     internal sealed class AdditionService : IAdditionService
     {

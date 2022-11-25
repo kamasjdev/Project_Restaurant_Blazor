@@ -1,6 +1,6 @@
-﻿using Restarant.Application.DTO;
+﻿using Restaurant.Application.DTO;
 
-namespace Restarant.Application.Abstractions
+namespace Restaurant.Application.Abstractions
 {
     public interface IAdditionService
     {
