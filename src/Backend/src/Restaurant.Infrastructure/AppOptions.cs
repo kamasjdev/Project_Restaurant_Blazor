@@ -1,4 +1,4 @@
-namespace Restaurant.Api
+namespace Restaurant.Infrastructure
 {
     public class AppOptions
     {
