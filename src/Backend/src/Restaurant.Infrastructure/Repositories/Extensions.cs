@@ -15,5 +15,11 @@ namespace Restaurant.Infrastructure.Repositories
             services.AddSingleton<IUserRepository, InMemoryUserRepository>();
             return services;
         }
+
+        public static IServiceCollection AddRepositories(this IServiceCollection services)
+        {
+            services.AddScoped<IAdditonRepository, AdditionRepository>();
+            return services;
+        }
     }
 }
