@@ -85,7 +85,7 @@ namespace Restaurant.UnitTests.Services
             ((CannotDeleteAdditionOrderedException)exception).AdditionId.ShouldBe(expectedException.AdditionId);
         }
 
-        private Addition AddDefaultAddition(IEnumerable<EntityId> productSaleIds = null)
+        private Addition AddDefaultAddition(IEnumerable<EntityId>? productSaleIds = null)
         {
             var addition = new Addition(Guid.NewGuid(), "Addition#1", 10, AdditionKind.Drink, productSaleIds);
             _additonRepository.GetAsync(addition.Id).Returns(addition);
