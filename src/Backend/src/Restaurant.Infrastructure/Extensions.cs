@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Restaurant.Infrastructure.Database;
 using Restaurant.Infrastructure.Documentation;
 using Restaurant.Infrastructure.Exceptions;
+using Restaurant.Infrastructure.Time;
 
 namespace Restaurant.Infrastructure
 {
@@ -15,6 +16,7 @@ namespace Restaurant.Infrastructure
             services.AddControllers();
             services.AddErrorHandling();
             services.AddDatabase(configuration);
+            services.AddTime();
             services.Configure<AppOptions>(configuration.GetRequiredSection("app"));
             return services;
         }

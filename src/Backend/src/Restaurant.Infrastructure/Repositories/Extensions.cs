@@ -19,6 +19,10 @@ namespace Restaurant.Infrastructure.Repositories
         public static IServiceCollection AddRepositories(this IServiceCollection services)
         {
             services.AddScoped<IAdditonRepository, AdditionRepository>();
+            services.AddScoped<IOrderRepository, OrderRepository>();
+            services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IProductSaleRepository, ProductSaleRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
             return services;
         }
     }
