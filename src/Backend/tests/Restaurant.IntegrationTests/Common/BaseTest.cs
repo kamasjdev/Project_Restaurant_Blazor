@@ -1,4 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using System.Data.Common;
+using System.Data;
 
 namespace Restaurant.IntegrationTests.Common
 {
@@ -7,7 +10,7 @@ namespace Restaurant.IntegrationTests.Common
     {
         protected OptionsProvider OptionsProvider { get; }
         private readonly TestAppFactory _app;
-        private AsyncServiceScope? _scope;
+        private IServiceScope? _scope;
 
         public BaseTest(OptionsProvider optionsProvider)
         {
@@ -22,20 +25,38 @@ namespace Restaurant.IntegrationTests.Common
 
         protected T GetRequiredService<T>() where T : notnull
         {
-            _scope ??= _app.Services.CreateAsyncScope();
-            return _scope.Value.ServiceProvider.GetRequiredService<T>();
+            _scope ??= _app.Services.CreateScope();
+            return _scope.ServiceProvider.GetRequiredService<T>();
         }
 
 
         public void Dispose()
         {
-            if (_scope.HasValue)
-            {
-                _scope.Value.Dispose();
-            }
+            _scope ??= _app.Services.CreateScope();
+            var connection = _scope.ServiceProvider.GetRequiredService<DbConnection>();
+            var logger = _scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
-            _app.Dispose();
-            GC.SuppressFinalize(this);
+            try
+            {
+                logger.LogInformation($"Dropping test database {connection.Database}");
+                var command = connection.CreateCommand();
+                command.CommandText = $"DROP DATABASE IF EXISTS `{connection.Database}`";
+                command.CommandType = CommandType.Text;
+                command.ExecuteNonQuery();
+            }
+            catch (Exception exception)
+            {
+                logger.LogError(exception, "There was an error while drop database");
+            }
+            finally
+            {
+                logger.LogInformation("Closing connection. Disposing TestAppFactory");
+                _scope.Dispose();
+                connection.Close();
+                connection.Dispose();
+                _app.Dispose();
+                GC.SuppressFinalize(this);
+            }
         }
     }
 }
