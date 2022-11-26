@@ -1,4 +1,5 @@
-﻿using Restaurant.Core.Entities;
+﻿using Microsoft.Extensions.Logging;
+using Restaurant.Core.Entities;
 using Restaurant.Core.Repositories;
 using System.Data;
 using System.Data.Common;
@@ -8,10 +9,12 @@ namespace Restaurant.Infrastructure.Repositories
     internal sealed class AdditionRepository : IAdditonRepository
     {
         private readonly DbConnection _dbConnection;
+        private readonly ILogger<IAdditonRepository> _logger;
 
-        public AdditionRepository(DbConnection dbConnection)
+        public AdditionRepository(DbConnection dbConnection, ILogger<IAdditonRepository> logger)
         {
             _dbConnection = dbConnection;
+            _logger = logger;
         }
 
         public Task AddAsync(Addition addition)
@@ -24,6 +27,7 @@ namespace Restaurant.Infrastructure.Repositories
             command.AddParameter("@AdditionName", addition.AdditionName.Value);
             command.AddParameter("@Price", addition.Price.Value);
             command.AddParameter("@AdditionKind", addition.AdditionKind.ToString());
+            _logger.LogInformation($"Infrastructure: Invoking query: {sql}");
             return command.ExecuteScalarAsync();
         }
 
@@ -34,6 +38,7 @@ namespace Restaurant.Infrastructure.Repositories
             command.CommandText = sql;
             command.CommandType = CommandType.Text;
             command.AddParameter("@Id", addition.Id.Value);
+            _logger.LogInformation($"Infrastructure: Invoking query: {sql}");
             return command.ExecuteScalarAsync();
         }
 
@@ -43,7 +48,8 @@ namespace Restaurant.Infrastructure.Repositories
             var command = _dbConnection.CreateCommand();
             command.CommandText = sql;
             command.CommandType = CommandType.Text;
-            var reader = await command.ExecuteReaderAsync();
+            _logger.LogInformation($"Infrastructure: Invoking query: {sql}");
+            using var reader = await command.ExecuteReaderAsync();
 
             if (!reader.HasRows)
             {
@@ -68,7 +74,8 @@ namespace Restaurant.Infrastructure.Repositories
             command.CommandText = sql;
             command.CommandType = CommandType.Text;
             command.AddParameter("@Id", id);
-            var reader = await command.ExecuteReaderAsync();
+            _logger.LogInformation($"Infrastructure: Invoking query: {sql}");
+            using var reader = await command.ExecuteReaderAsync();
             Addition? addition = null;
 
             if (!reader.HasRows)
@@ -96,6 +103,7 @@ namespace Restaurant.Infrastructure.Repositories
             command.AddParameter("@AdditionName", addition.AdditionName.Value);
             command.AddParameter("@Price", addition.Price.Value);
             command.AddParameter("@AdditionKind", addition.AdditionKind.ToString());
+            _logger.LogInformation($"Infrastructure: Invoking query: {sql}");
             return command.ExecuteScalarAsync();
         }
     }

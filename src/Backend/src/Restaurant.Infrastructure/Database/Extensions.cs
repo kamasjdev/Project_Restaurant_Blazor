@@ -1,9 +1,6 @@
 ﻿using FluentMigrator.Runner;
-using Humanizer;
-using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MySql.Data.MySqlClient;
 using Restaurant.Application.Abstractions;
@@ -65,15 +62,18 @@ namespace Restaurant.Infrastructure.Database
             var connectionStringSplited = connectionString.Split(";");
             var connectionStringWithoutDb = connectionStringSplited.Where(str => !str.Contains("Database="))
                                 .Aggregate((current, next) => current + ";" + next);
-            var database = connectionStringSplited.SingleOrDefault(str => str.Contains("Database=")).Split("Database=")[1];
+            var database = connectionStringSplited.SingleOrDefault(str => str.Contains("Database="))?.Split("Database=")[1];
 
-            using (var conn = new MySqlConnection(connectionStringWithoutDb))
-            using (var cmd = conn.CreateCommand())
+            if (string.IsNullOrEmpty(database))
             {
-                conn.Open();
-                cmd.CommandText = $"CREATE DATABASE IF NOT EXISTS {database}";
-                cmd.ExecuteNonQuery();
+                throw new InvalidOperationException("Invalid ConnectionString. There is no value for 'Database=' check it and try again");
             }
+
+            using var conn = new MySqlConnection(connectionStringWithoutDb);
+            using var cmd = conn.CreateCommand();
+            conn.Open();
+            cmd.CommandText = $"CREATE DATABASE IF NOT EXISTS {database}";
+            cmd.ExecuteNonQuery();
         }
     }
 }
