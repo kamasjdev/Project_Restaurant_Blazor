@@ -83,6 +83,16 @@ namespace Restaurant.Application.Mail
                 errors.AddProperty(nameof(EmailSettings.SmtpClient));
             }
 
+            if (_settings.SmtpPort == default)
+            {
+                errors.AddProperty(nameof(EmailSettings.SmtpPort));
+            }
+
+            if (_settings.Timeout == default)
+            {
+                errors.AddProperty(nameof(EmailSettings.Timeout));
+            }
+
             try
             {
                 Email.Of(_settings.Email);
