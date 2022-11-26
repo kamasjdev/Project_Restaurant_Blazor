@@ -68,7 +68,7 @@ namespace Restaurant.UnitTests.Entities
             var email = "email@test.com";
             var expectedException = new ProductCannotBeNullException();
 
-            var exception = Record.Exception(() => new ProductSale(id, null, ProductSaleState.New, Email.Of(email)));
+            var exception = Record.Exception(() => new ProductSale(id, product: null, ProductSaleState.New, Email.Of(email)));
 
             exception.ShouldNotBeNull();
             exception.ShouldBeOfType(expectedException.GetType());
