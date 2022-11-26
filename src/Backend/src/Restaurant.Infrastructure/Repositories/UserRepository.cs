@@ -10,9 +10,9 @@ namespace Restaurant.Infrastructure.Repositories
     internal sealed class UserRepository : IUserRepository
     {
         private readonly DbConnection _dbConnection;
-        private readonly ILogger<IUserRepository> _logger;
+        private readonly ILogger<UserRepository> _logger;
 
-        public UserRepository(DbConnection dbConnection, ILogger<IUserRepository> logger)
+        public UserRepository(DbConnection dbConnection, ILogger<UserRepository> logger)
         {
             _dbConnection = dbConnection;
             _logger = logger;

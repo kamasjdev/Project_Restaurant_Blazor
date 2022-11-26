@@ -9,9 +9,9 @@ namespace Restaurant.Infrastructure.Repositories
     internal sealed class AdditionRepository : IAdditonRepository
     {
         private readonly DbConnection _dbConnection;
-        private readonly ILogger<IAdditonRepository> _logger;
+        private readonly ILogger<AdditionRepository> _logger;
 
-        public AdditionRepository(DbConnection dbConnection, ILogger<IAdditonRepository> logger)
+        public AdditionRepository(DbConnection dbConnection, ILogger<AdditionRepository> logger)
         {
             _dbConnection = dbConnection;
             _logger = logger;

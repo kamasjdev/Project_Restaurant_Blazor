@@ -31,6 +31,16 @@ namespace Restaurant.Core.Entities
             Email = email;
         }
 
+        public ProductSale(EntityId? id, EntityId productId, ProductSaleState productSaleState, Email email, EntityId? additionId = null, EntityId? orderId = null)
+            : base(id)
+        {
+            ProductId = productId;
+            OrderId = orderId;
+            AdditionId = additionId;
+            ProductSaleState = productSaleState;
+            Email = email;
+        }
+
         public void ChangeProduct(Product? product)
         {
             if (product is null)
