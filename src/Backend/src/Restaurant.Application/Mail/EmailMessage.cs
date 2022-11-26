@@ -1,4 +1,5 @@
-﻿using Restaurant.Core.Entities;
+﻿using Restaurant.Application.Exceptions;
+using Restaurant.Core.Entities;
 using System.Text;
 
 namespace Restaurant.Application.Mail
@@ -31,7 +32,7 @@ namespace Restaurant.Application.Mail
             {
                 if (order == null)
                 {
-                    //throw new CannotConstructEmailFromOrderException();
+                    throw new CannotConstructEmailFromOrderException();
                 }
 
                 _subject.Append($"Zamówienie nr {order.OrderNumber.Value}");
