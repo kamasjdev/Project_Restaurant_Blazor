@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
+using Microsoft.Extensions.Logging;
+using System.Data;
+using System.Data.Common;
 
 namespace Restaurant.IntegrationTests.Common
 {
@@ -9,7 +11,7 @@ namespace Restaurant.IntegrationTests.Common
     {
         public HttpClient Client { get; }
 
-        public TestAppFactory(Action<IServiceCollection> services = null)
+        public TestAppFactory(Action<IServiceCollection>? services = null)
         {
             Client = WithWebHostBuilder(builder =>
             {
@@ -20,6 +22,34 @@ namespace Restaurant.IntegrationTests.Common
 
                 builder.UseEnvironment("test");
             }).CreateClient();
+        }
+
+        public override async ValueTask DisposeAsync()
+        {
+            var scope = Services.CreateScope();
+            var connection = scope.ServiceProvider.GetRequiredService<DbConnection>();
+            var logger = Services.GetRequiredService<ILogger<Program>>();
+
+            try
+            {
+                logger.LogInformation($"Dropping test database {connection.Database}");
+                var command = connection.CreateCommand();
+                command.CommandText = $"DROP DATABASE {connection.Database}";
+                command.CommandType = CommandType.Text;
+                await command.ExecuteNonQueryAsync();
+            }
+            catch (Exception exception)
+            {
+                logger.LogError(exception, "There was an error while drop database");
+            }
+            finally
+            {
+                logger.LogInformation("Closing connection. Disposing TestAppFactory");
+                scope.Dispose();
+                await connection.CloseAsync();
+                await connection.DisposeAsync();
+                await base.DisposeAsync();
+            }
         }
     }
 }

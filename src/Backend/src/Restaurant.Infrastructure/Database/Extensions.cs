@@ -72,7 +72,7 @@ namespace Restaurant.Infrastructure.Database
             using var conn = new MySqlConnection(connectionStringWithoutDb);
             using var cmd = conn.CreateCommand();
             conn.Open();
-            cmd.CommandText = $"CREATE DATABASE IF NOT EXISTS {database}";
+            cmd.CommandText = $"CREATE DATABASE IF NOT EXISTS `{database}`";
             cmd.ExecuteNonQuery();
         }
     }
