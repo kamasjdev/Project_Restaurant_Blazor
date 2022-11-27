@@ -43,6 +43,48 @@ namespace Restaurant.IntegrationTests.RepositoryTests
             productAdded.Orders.Count().ShouldBeGreaterThan(1);
         }
 
+        [Fact]
+        public async Task should_update_product()
+        {
+            var product = await AddDefaultProductAsync();
+            product.ChangePrice(100000M);
+            product.ChangeProductKind(ProductKind.Soup);
+            product.ChangeProductName("name1234");
+
+            await _productRepository.UpdateAsync(product);
+
+            var productUpdated = await _productRepository.GetAsync(product.Id);
+            productUpdated.ShouldNotBeNull();
+            productUpdated.Price.ShouldBe(product.Price);
+            productUpdated.ProductKind.ShouldBe(product.ProductKind);
+            productUpdated.ProductName.ShouldBe(product.ProductName);
+        }
+
+        [Fact]
+        public async Task should_delete_product()
+        {
+            var product = await AddDefaultProductAsync();
+
+            await _productRepository.DeleteAsync(product);
+
+            var productDeleted = await _productRepository.GetAsync(product.Id);
+            productDeleted.ShouldBeNull();
+        }
+
+        [Fact]
+        public async Task should_get_all_products()
+        {
+            var product = await AddDefaultProductAsync();
+            var product2 = await AddDefaultProductAsync();
+
+            var products = await _productRepository.GetAllAsync();
+
+            products.ShouldNotBeEmpty();
+            products.Count().ShouldBeGreaterThan(1);
+            products.ShouldContain(p => p.Id.Equals(product.Id));
+            products.ShouldContain(p => p.Id.Equals(product2.Id));
+        }
+
         private readonly IProductRepository _productRepository;
 
         public ProductRepositoryTests(OptionsProvider optionsProvider)

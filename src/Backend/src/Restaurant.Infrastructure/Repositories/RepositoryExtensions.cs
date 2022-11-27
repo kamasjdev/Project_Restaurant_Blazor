@@ -29,31 +29,31 @@ namespace Restaurant.Infrastructure.Repositories
             return dbDataReader.GetString(field);
         }
 
-        public static decimal GetSafeDecimal(this DbDataReader dbDataReader, string field)
+        public static decimal? GetSafeDecimal(this DbDataReader dbDataReader, string field)
         {
             if (dbDataReader.IsDBNull(field))
             {
-                return default;
+                return null;
             }
 
             return dbDataReader.GetDecimal(field);
         }
 
-        public static Guid GetSafeGuid(this DbDataReader dbDataReader, string field)
+        public static Guid? GetSafeGuid(this DbDataReader dbDataReader, string field)
         {
             if (dbDataReader.IsDBNull(field))
             {
-                return default;
+                return null;
             }
 
             return dbDataReader.GetGuid(field);
         }
 
-        public static DateTime GetSafeDateTime(this DbDataReader dbDataReader, string field)
+        public static DateTime? GetSafeDateTime(this DbDataReader dbDataReader, string field)
         {
             if (dbDataReader.IsDBNull(field))
             {
-                return default;
+                return null;
             }
 
             return dbDataReader.GetDateTime(field);

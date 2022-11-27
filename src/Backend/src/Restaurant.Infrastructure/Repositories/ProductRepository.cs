@@ -4,7 +4,6 @@ using Restaurant.Core.Repositories;
 using Restaurant.Core.ValueObjects;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlServerCe;
 using System.Reflection;
 
 namespace Restaurant.Infrastructure.Repositories
@@ -122,7 +121,7 @@ namespace Restaurant.Infrastructure.Repositories
                     continue;
                 }
 
-                if (productSaleId == Guid.Empty)
+                if (productSaleId is null)
                 {
                     continue;
                 }
@@ -131,7 +130,7 @@ namespace Restaurant.Infrastructure.Repositories
                 Addition? addition = null;
                 var additionId = reader.GetSafeGuid("a.Id");
 
-                if (additionId != Guid.Empty)
+                if (additionId is not null)
                 {
                     addition = new Addition(additionId, reader.GetSafeString("a.AdditionName"), reader.GetDecimal("a.Price"),
                             reader.GetString("a.AdditionKind"));
@@ -155,15 +154,15 @@ namespace Restaurant.Infrastructure.Repositories
                     continue;
                 }
 
-                if (orderId == Guid.Empty)
+                if (orderId is null)
                 {
                     continue;
                 }
                 
                 order = new Order(orderId,
                                 reader.GetSafeString("o.OrderNumber"),
-                                reader.GetSafeDateTime("o.Created"),
-                                reader.GetSafeDecimal("o.Price"),
+                                reader.GetDateTime("o.Created"),
+                                reader.GetDecimal("o.Price"),
                                 Email.Of(reader.GetString("o.Email")),
                                 reader.GetSafeString("o.Note"),
                                 productSales.Where(o => o.Order is null));

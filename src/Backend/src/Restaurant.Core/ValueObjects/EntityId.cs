@@ -6,14 +6,19 @@ namespace Restaurant.Core.ValueObjects
     {
         public Guid Value { get; }
 
-        public EntityId(Guid value)
+        public EntityId(Guid? value)
         {
-            if (value == Guid.Empty)
+            if (value is null)
             {
                 throw new InvalidEntityIdException(value);
             }
 
-            Value = value;
+            if (value! == Guid.Empty)
+            {
+                throw new InvalidEntityIdException(value.Value);
+            }
+
+            Value = value.Value;
         }
 
         public static EntityId Create() => new(Guid.NewGuid());

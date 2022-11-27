@@ -84,19 +84,20 @@ namespace Restaurant.IntegrationTests.Common
             return product;
         }
 
-        public async Task<ProductSale> AddDefaultProductSaleAsync(EntityId productId, decimal endPrice, Email email, EntityId? additionId = null)
+        public async Task<ProductSale> AddDefaultProductSaleAsync(EntityId productId, decimal endPrice, Email email, EntityId? additionId = null, EntityId? orderId = null)
         {
             _scope ??= _app.Services.CreateScope();
             var count = Enum.GetNames<ProductKind>().Length - 1;
             var random = new Random();
             var productSaleRepository = _scope.ServiceProvider.GetRequiredService<IProductSaleRepository>();
-            var productSale = new ProductSale(Guid.NewGuid(), productId, (ProductSaleState)random.Next(0, count), endPrice, email, additionId);
+            var productSale = new ProductSale(Guid.NewGuid(), productId, (ProductSaleState)random.Next(0, count), endPrice, email, additionId, orderId);
             await productSaleRepository.AddAsync(productSale);
             return productSale;
         }
 
-        public async Task<Order> AddDefaultOrderAsync(Email email, IEnumerable<ProductSale> productSales)
+        public async Task<Order> AddDefaultOrderAsync(Email email, IEnumerable<ProductSale>? productSales = null)
         {
+            productSales ??= new List<ProductSale>();
             _scope ??= _app.Services.CreateScope();
             var orderRepository = _scope.ServiceProvider.GetRequiredService<IOrderRepository>();
             var productSaleRepository = _scope.ServiceProvider.GetRequiredService<IProductSaleRepository>();
@@ -112,6 +113,15 @@ namespace Restaurant.IntegrationTests.Common
 
             await Task.WhenAll(tasks);
             return order;
+        }
+
+        public async Task<User> AddDefaultUserAsync(Email email)
+        {
+            _scope ??= _app.Services.CreateScope();
+            var user = new User(Guid.NewGuid(), email, "DefaultPaswword", "admin", DateTime.UtcNow);
+            var userRepository = _scope.ServiceProvider.GetRequiredService<IUserRepository>();
+            await userRepository.AddAsync(user);
+            return user;
         }
     }
 }

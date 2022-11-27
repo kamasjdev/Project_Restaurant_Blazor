@@ -4,7 +4,7 @@
     {
         public Guid Id { get; }
 
-        public InvalidEntityIdException(Guid id) : base($"Cannot set: '{id}' as entity identifier.")
+        public InvalidEntityIdException(Guid? id) : base($"Cannot set: '{id}' as entity identifier.")
         {
         }
     }

@@ -63,8 +63,8 @@ namespace Restaurant.Infrastructure.Repositories
             var list = new List<ProductSale>();
             while (reader.Read())
             {
-                var additionId = reader.GetGuid("AdditionId");
-                var orderId = reader.GetGuid("OrderId");
+                var additionId = reader.GetSafeGuid("AdditionId");
+                var orderId = reader.GetSafeGuid("OrderId");
                 list.Add(new ProductSale(reader.GetGuid("Id"),
                     reader.GetGuid("ProductId"),
                     Enum.Parse<ProductSaleState>(reader.GetString("ProductSaleState")),
@@ -95,8 +95,8 @@ namespace Restaurant.Infrastructure.Repositories
             var list = new List<ProductSale>();
             while (reader.Read())
             {
-                var additionId = reader.GetGuid("AdditionId");
-                var orderId = reader.GetGuid("OrderId");
+                var additionId = reader.GetSafeGuid("AdditionId");
+                var orderId = reader.GetSafeGuid("OrderId");
                 list.Add(new ProductSale(reader.GetGuid("Id"),
                     reader.GetGuid("ProductId"),
                     Enum.Parse<ProductSaleState>(reader.GetString("ProductSaleState")),
@@ -127,13 +127,13 @@ namespace Restaurant.Infrastructure.Repositories
             var list = new List<ProductSale>();
             while (reader.Read())
             {
-                var additionId = reader.GetGuid("AdditionId");
+                var additionId = reader.GetSafeGuid("AdditionId");
                 list.Add(new ProductSale(reader.GetGuid("Id"),
                     reader.GetGuid("ProductId"),
                     Enum.Parse<ProductSaleState>(reader.GetString("ProductSaleState")),
                     reader.GetDecimal("EndPrice"),
                     Email.Of(reader.GetString("Email")),
-                    additionId != Guid.Empty ? additionId : null,
+                    additionId,
                     orderId));
             }
 
@@ -143,10 +143,10 @@ namespace Restaurant.Infrastructure.Repositories
         public async Task<ProductSale?> GetAsync(Guid id)
         {
             var sql = """
-                      SELECT p.Id, p.ProductName, p.Price, p.ProductKind, 
-                      ps.Id, ps.ProductId, ps.AdditionId, ps.EndPrice, ps.OrderId, ps.ProductSaleState, ps.Email
-                      a.Id, a.AdditionName, a.Price, a.AdditionKind, 
-                      o.Id, o.OrderNumber, o.Created, o.Price, o.Email, o.Note
+                      SELECT p.Id as `p.Id`, p.ProductName as `p.ProductName`, p.Price as `p.Price`, p.ProductKind as `p.ProductKind`, 
+                      ps.Id as `ps.Id`, ps.ProductId as `ps.ProductId`, ps.AdditionId as `ps.AdditionId`, ps.EndPrice as `ps.EndPrice`, ps.OrderId as `ps.OrderId`, ps.ProductSaleState as `ps.ProductSaleState`, ps.Email as `ps.Email`,
+                      a.Id as `a.Id`, a.AdditionName as `a.AdditionName`, a.Price as `a.Price`, a.AdditionKind as `a.AdditionKind`, 
+                      o.Id as `o.Id`, o.OrderNumber as `o.OrderNumber`, o.Created as `o.Created`, o.Price as `o.Price`, o.Email as `o.Email`, o.Note as `o.Note`
                       FROM product_sales ps
                       LEFT JOIN products p ON ps.ProductId = p.Id
                       LEFT JOIN additions a on ps.AdditionId = a.Id
@@ -171,33 +171,34 @@ namespace Restaurant.Infrastructure.Repositories
                 Order? order = null;
                 Addition? addition = null;
                 Product? product = null;
-                productSale = new ProductSale(reader.GetGuid("ps.Id"),
-                    product, Enum.Parse<ProductSaleState>(reader.GetString("ps.ProductSaleState")),
-                Email.Of(reader.GetString("ps.Email")),
-                    addition, order);
 
                 product ??= new Product(reader.GetGuid("p.Id"),
                                     reader.GetString("p.ProductName"),
                                     reader.GetDecimal("p.Price"),
                                         reader.GetString("p.ProductKind"));
 
-                var additionId = reader.GetGuid("a.Id");
-                if (additionId != Guid.Empty)
+                var additionId = reader.GetSafeGuid("a.Id");
+                if (additionId is not null)
                 {
                     addition = new Addition(additionId, reader.GetString("a.AdditionName"), reader.GetDecimal("a.Price"),
                     reader.GetString("a.AdditionKind"));
                 }
 
-                var orderId = reader.GetGuid("o.Id");
-                if (orderId != Guid.Empty)
+                var orderId = reader.GetSafeGuid("o.Id");
+                if (orderId is not null)
                 {
-                    order = new Order(reader.GetGuid("o.Id"),
+                    order = new Order(orderId,
                                     reader.GetString("o.OrderNumber"),
                                     reader.GetDateTime("o.Created"),
                                     reader.GetDecimal("o.Price"),
                                     Email.Of(reader.GetString("o.Email")),
-                                    reader.GetString("o.Note"));
+                                    reader.GetSafeString("o.Note"));
                 }
+
+                productSale = new ProductSale(reader.GetGuid("ps.Id"),
+                    product, Enum.Parse<ProductSaleState>(reader.GetString("ps.ProductSaleState")),
+                Email.Of(reader.GetString("ps.Email")),
+                    addition, order);
             }
 
             return productSale;
