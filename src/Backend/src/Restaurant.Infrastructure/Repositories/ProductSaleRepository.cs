@@ -4,6 +4,7 @@ using Restaurant.Core.Repositories;
 using Restaurant.Core.ValueObjects;
 using System.Data;
 using System.Data.Common;
+using System.Reflection;
 
 namespace Restaurant.Infrastructure.Repositories
 {
@@ -172,33 +173,20 @@ namespace Restaurant.Infrastructure.Repositories
                 Addition? addition = null;
                 Product? product = null;
 
-                product ??= new Product(reader.GetGuid("p.Id"),
-                                    reader.GetString("p.ProductName"),
-                                    reader.GetDecimal("p.Price"),
-                                        reader.GetString("p.ProductKind"));
-
+                product ??= ConstructProductFromQuery(reader, "p");
                 var additionId = reader.GetSafeGuid("a.Id");
                 if (additionId is not null)
                 {
-                    addition = new Addition(additionId, reader.GetString("a.AdditionName"), reader.GetDecimal("a.Price"),
-                    reader.GetString("a.AdditionKind"));
+                    addition = ConstructAdditionFromQuery(reader, "a");
                 }
 
                 var orderId = reader.GetSafeGuid("o.Id");
                 if (orderId is not null)
                 {
-                    order = new Order(orderId,
-                                    reader.GetString("o.OrderNumber"),
-                                    reader.GetDateTime("o.Created"),
-                                    reader.GetDecimal("o.Price"),
-                                    Email.Of(reader.GetString("o.Email")),
-                                    reader.GetSafeString("o.Note"));
+                    order = ConstructOrderFromQuery(reader, "o");
                 }
 
-                productSale = new ProductSale(reader.GetGuid("ps.Id"),
-                    product, Enum.Parse<ProductSaleState>(reader.GetString("ps.ProductSaleState")),
-                Email.Of(reader.GetString("ps.Email")),
-                    addition, order);
+                productSale = ConstructProductSaleFromQuery(reader, "ps", product, addition, order);
             }
 
             return productSale;
@@ -219,6 +207,71 @@ namespace Restaurant.Infrastructure.Repositories
             command.AddParameter("@ProductSaleState", productSale.ProductSaleState.ToString());
             _logger.LogInformation($"Infrastructure: Invoking query: {sql}");
             return command.ExecuteScalarAsync();
+        }
+
+        private Order ConstructOrderFromQuery(DbDataReader reader, string? prefix = null, IEnumerable<ProductSale>? productSales = null)
+        {
+            var searchPrefix = string.IsNullOrEmpty(prefix) ? string.Empty : $"{prefix}.";
+            var order = new Order(reader.GetGuid($"{searchPrefix}Id"),
+                        reader.GetString($"{searchPrefix}OrderNumber"),
+                        reader.GetDateTime($"{searchPrefix}Created"),
+                        reader.GetDecimal($"{searchPrefix}Price"),
+                            Email.Of(reader.GetString($"{searchPrefix}Email")),
+                            reader.GetSafeString($"{searchPrefix}Note"));
+
+            if (productSales is not null)
+            {
+                var productsField = typeof(Order).GetField("_products", BindingFlags.NonPublic | BindingFlags.Instance);
+                productsField?.SetValue(order, productSales);
+            }
+
+            return order;
+        }
+
+        private Product ConstructProductFromQuery(DbDataReader reader, string? prefix = null, IEnumerable<Order>? orders = null, IEnumerable<EntityId>? productSaleIds = null)
+        {
+            var searchPrefix = string.IsNullOrEmpty(prefix) ? string.Empty : $"{prefix}.";
+            var product = new Product(reader.GetGuid($"{searchPrefix}Id"),
+                    reader.GetString($"{searchPrefix}ProductName"),
+                    reader.GetDecimal($"{searchPrefix}Price"),
+                        reader.GetString($"{searchPrefix}ProductKind"));
+
+            if (orders is not null)
+            {
+                var ordersField = typeof(Product).GetField("_orders", BindingFlags.NonPublic | BindingFlags.Instance);
+                ordersField?.SetValue(product, orders);
+            }
+
+            if (productSaleIds is not null)
+            {
+                var productSaleIdsField = typeof(Product).GetField("_productSaleIds", BindingFlags.NonPublic | BindingFlags.Instance);
+                productSaleIdsField?.SetValue(product, productSaleIds);
+            }
+
+            return product;
+        }
+
+        private Addition ConstructAdditionFromQuery(DbDataReader reader, string prefix, List<EntityId>? productSaleIds = null)
+        {
+            var searchPrefix = string.IsNullOrEmpty(prefix) ? string.Empty : $"{prefix}.";
+            var addition = new Addition(reader.GetGuid($"{searchPrefix}Id"), reader.GetString($"{searchPrefix}AdditionName"), reader.GetDecimal($"{searchPrefix}Price"),
+                        reader.GetString($"{searchPrefix}AdditionKind"));
+
+            if (productSaleIds is not null)
+            {
+                var additionProductSaleIdsField = typeof(Addition).GetField("_productSaleIds", BindingFlags.NonPublic | BindingFlags.Instance);
+                additionProductSaleIdsField?.SetValue(addition, productSaleIds);
+            }
+            return addition;
+        }
+
+        private ProductSale ConstructProductSaleFromQuery(DbDataReader reader, string prefix, Product product, Addition? addition = null, Order? order = null)
+        {
+            var searchPrefix = string.IsNullOrEmpty(prefix) ? string.Empty : $"{prefix}.";
+            return new ProductSale(reader.GetGuid("ps.Id"),
+                    product, Enum.Parse<ProductSaleState>(reader.GetString($"{searchPrefix}ProductSaleState")),
+                    Email.Of(reader.GetString($"{searchPrefix}Email")),
+                    addition, order);
         }
     }
 }
