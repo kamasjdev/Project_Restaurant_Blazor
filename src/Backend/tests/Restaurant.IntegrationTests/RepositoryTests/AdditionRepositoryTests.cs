@@ -60,15 +60,6 @@ namespace Restaurant.IntegrationTests.RepositoryTests
             additions.Count().ShouldBeGreaterThan(1);
         }
 
-        public async Task<Addition> AddDefaultAdditionAsync()
-        {
-            var count = Enum.GetNames<AdditionKind>().Length - 1;
-            var random = new Random();
-            var addition = new Addition(Guid.NewGuid(), $"Addition-{Guid.NewGuid()}", 100M, (AdditionKind) random.Next(0, count));
-            await _additonRepository.AddAsync(addition);
-            return addition;
-        }
-
         private readonly IAdditonRepository _additonRepository;
 
         public AdditionRepositoryTests(OptionsProvider optionsProvider) : base(optionsProvider)

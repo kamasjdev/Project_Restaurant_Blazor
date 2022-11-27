@@ -15,7 +15,7 @@ namespace Restaurant.Core.Entities
         private IList<EntityId> _productSaleIds = new List<EntityId>();
         public IEnumerable<EntityId> ProductSaleIds => _productSaleIds;
 
-        public Product(EntityId? id, ProductName productName, Price price, ProductKind productKind, IEnumerable<Order>? orders = null, IEnumerable<EntityId>? productSaleIds = null)
+        public Product(EntityId? id, ProductName? productName, Price? price, ProductKind productKind, IEnumerable<Order>? orders = null, IEnumerable<EntityId>? productSaleIds = null)
             : base(id)
         {
             ChangeProductName(productName);
@@ -25,7 +25,7 @@ namespace Restaurant.Core.Entities
             _productSaleIds = productSaleIds?.ToList() ?? new List<EntityId>();
         }
 
-        public Product(EntityId? id, ProductName productName, Price price, string productKind, IEnumerable<Order>? orders = null, IEnumerable<EntityId>? productSaleIds = null)
+        public Product(EntityId? id, ProductName? productName, Price? price, string? productKind, IEnumerable<Order>? orders = null, IEnumerable<EntityId>? productSaleIds = null)
             : base(id)
         {
             ChangeProductName(productName);
@@ -35,13 +35,23 @@ namespace Restaurant.Core.Entities
             _productSaleIds = productSaleIds?.ToList() ?? new List<EntityId>();
         }
 
-        public void ChangePrice(Price price)
+        public void ChangePrice(Price? price)
         {
+            if (price is null)
+            {
+                throw new PriceCannotBeNullException();
+            }
+
             Price = price;
         }
 
-        public void ChangeProductName(ProductName productName)
+        public void ChangeProductName(ProductName? productName)
         {
+            if (productName is null)
+            {
+                throw new ProductNameCannotBeEmptyException();
+            }
+
             ProductName = productName;
         }
 
@@ -85,7 +95,7 @@ namespace Restaurant.Core.Entities
             _orders.Add(order);
         }
 
-        private static ProductKind ParseToProductKind(string productKind)
+        private static ProductKind ParseToProductKind(string? productKind)
         {
             var parsed = Enum.TryParse<ProductKind>(productKind, out var productKindParsed);
 
@@ -99,7 +109,7 @@ namespace Restaurant.Core.Entities
                 throw new InvalidProductKindException(productKind);
             }
 
-            return productKindParsed;
+            return productKindParsed!;
         }
     }
 }

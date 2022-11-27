@@ -6,7 +6,7 @@ namespace Restaurant.Core.ValueObjects
     {
         public string Value { get; }
 
-        public AdditionName(string addtionName)
+        public AdditionName(string? addtionName)
         {
             ValidAdditionName(addtionName);
             Value = addtionName;
@@ -15,7 +15,7 @@ namespace Restaurant.Core.ValueObjects
         public static implicit operator string(AdditionName additionName)
             => additionName.Value;
 
-        public static implicit operator AdditionName(string value)
+        public static implicit operator AdditionName(string? value)
             => new(value);
 
         public override bool Equals(object? obj)
@@ -42,7 +42,7 @@ namespace Restaurant.Core.ValueObjects
             yield return Value;
         }
 
-        private static void ValidAdditionName(string additionName)
+        private static void ValidAdditionName(string? additionName)
         {
             if (string.IsNullOrWhiteSpace(additionName))
             {

@@ -5,6 +5,7 @@ using Restaurant.Core.ValueObjects;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlServerCe;
+using System.Reflection;
 
 namespace Restaurant.Infrastructure.Repositories
 {
@@ -73,10 +74,10 @@ namespace Restaurant.Infrastructure.Repositories
         public async Task<Product?> GetAsync(Guid id)
         {
             var sql = """
-                        SELECT p.Id, p.ProductName, p.Price, p.ProductKind, 
-                        ps.Id, ps.ProductId, ps.AdditionId, ps.EndPrice, ps.OrderId, ps.ProductSaleState, ps.Email
-                        a.Id, a.AdditionName, a.Price, a.AdditionKind, 
-                        o.Id, o.OrderNumber, o.Created, o.Price, o.Email, o.Note
+                        SELECT p.Id as `p.Id`, p.ProductName as `p.ProductName`, p.Price as `p.Price`, p.ProductKind as `p.ProductKind`, 
+                        ps.Id as `ps.Id`, ps.ProductId as `ps.ProductId`, ps.AdditionId as `ps.AdditionId`, ps.EndPrice as `ps.EndPrice`, ps.OrderId as `ps.OrderId`, ps.ProductSaleState as `ps.ProductSaleState`, ps.Email as `ps.Email`,
+                        a.Id as `a.Id`, a.AdditionName as `a.AdditionName`, a.Price as `a.Price`, a.AdditionKind as `a.AdditionKind`, 
+                        o.Id as `o.Id`, o.OrderNumber as `o.OrderNumber`, o.Created as `o.Created`, o.Price as `o.Price`, o.Email as `o.Email`, o.Note as `o.Note`
                         FROM products p
                         LEFT JOIN product_sales ps ON ps.ProductId = p.Id
                         LEFT JOIN additions a on ps.AdditionId = a.Id
@@ -101,14 +102,19 @@ namespace Restaurant.Infrastructure.Repositories
             var productSaleIds = new List<EntityId>();
             while (reader.Read())
             {
-                product ??= new Product(reader.GetGuid("p.Id"),
-                    reader.GetString("p.ProductName"),
-                    reader.GetDecimal("p.Price"),
-                        reader.GetString("p.ProductKind"), 
-                        orders,
-                        productSaleIds);
+                if (product is null)
+                {
+                    product = new Product(reader.GetSafeGuid("p.Id"),
+                        reader.GetSafeString("p.ProductName"),
+                        reader.GetSafeDecimal("p.Price"),
+                            reader.GetString("p.ProductKind"));
+                    var ordersField = typeof(Product).GetField("_orders", BindingFlags.NonPublic | BindingFlags.Instance);
+                    ordersField?.SetValue(product, orders);
+                    var productSaleIdsField = typeof(Product).GetField("_productSaleIds", BindingFlags.NonPublic | BindingFlags.Instance);
+                    productSaleIdsField?.SetValue(product, productSaleIds);
+                }
 
-                var productSaleId = reader.GetGuid("ps.Id");
+                var productSaleId = reader.GetSafeGuid("ps.Id");
                 var productSaleExists = productSales.SingleOrDefault(ps => ps.Id == productSaleId);
 
                 if (productSaleExists is not null)
@@ -123,22 +129,29 @@ namespace Restaurant.Infrastructure.Repositories
 
                 Order? order = null;
                 Addition? addition = null;
-                productSales.Add(new ProductSale(productSaleId,
+                var additionId = reader.GetSafeGuid("a.Id");
+
+                if (additionId != Guid.Empty)
+                {
+                    addition = new Addition(additionId, reader.GetSafeString("a.AdditionName"), reader.GetDecimal("a.Price"),
+                            reader.GetString("a.AdditionKind"));
+                    var productSaleIdsField = typeof(Addition).GetField("_productSaleIds", BindingFlags.NonPublic | BindingFlags.Instance);
+                    productSaleIdsField?.SetValue(addition, productSaleIds);
+                }
+                
+
+                var productSale = new ProductSale(productSaleId,
                     product, Enum.Parse<ProductSaleState>(reader.GetString("ps.ProductSaleState")),
                     Email.Of(reader.GetString("ps.Email")),
-                    addition, order));
+                    addition);
+                productSales.Add(productSale);
                 productSaleIds.Add(productSaleId);
 
-                var additionId = reader.GetGuid("a.Id");
-                addition = additionId != Guid.Empty ?
-                    new Addition(additionId, reader.GetString("a.AdditionName"), reader.GetDecimal("a.Price"),
-                    reader.GetString("a.AdditionKind"), productSaleIds) : null;
-
-
-                var orderId = reader.GetGuid("o.Id");
+                var orderId = reader.GetSafeGuid("o.Id");
                 var orderExists = orders.SingleOrDefault(o => o.Id == orderId);
                 if (orderExists is not null)
                 {
+                    orderExists.AddProduct(productSale);
                     continue;
                 }
 
@@ -147,13 +160,14 @@ namespace Restaurant.Infrastructure.Repositories
                     continue;
                 }
                 
-                order = new Order(reader.GetGuid("o.Id"),
-                                reader.GetString("o.OrderNumber"),
-                                reader.GetDateTime("o.Created"),
-                                reader.GetDecimal("o.Price"),
+                order = new Order(orderId,
+                                reader.GetSafeString("o.OrderNumber"),
+                                reader.GetSafeDateTime("o.Created"),
+                                reader.GetSafeDecimal("o.Price"),
                                 Email.Of(reader.GetString("o.Email")),
-                                reader.GetString("o.Note"),
-                                productSales);
+                                reader.GetSafeString("o.Note"),
+                                productSales.Where(o => o.Order is null));
+                orders.Add(order);
             }
 
             return product;

@@ -68,6 +68,7 @@ namespace Restaurant.Infrastructure.Repositories
                 list.Add(new ProductSale(reader.GetGuid("Id"),
                     reader.GetGuid("ProductId"),
                     Enum.Parse<ProductSaleState>(reader.GetString("ProductSaleState")),
+                    reader.GetDecimal("EndPrice"),
                     Email.Of(reader.GetString("Email")),
                     additionId != Guid.Empty ? additionId : null,
                     orderId != Guid.Empty ? orderId : null));
@@ -99,6 +100,7 @@ namespace Restaurant.Infrastructure.Repositories
                 list.Add(new ProductSale(reader.GetGuid("Id"),
                     reader.GetGuid("ProductId"),
                     Enum.Parse<ProductSaleState>(reader.GetString("ProductSaleState")),
+                    reader.GetDecimal("EndPrice"),
                     Email.Of(reader.GetString("Email")),
                     additionId != Guid.Empty ? additionId : null,
                     orderId != Guid.Empty ? orderId : null));
@@ -129,6 +131,7 @@ namespace Restaurant.Infrastructure.Repositories
                 list.Add(new ProductSale(reader.GetGuid("Id"),
                     reader.GetGuid("ProductId"),
                     Enum.Parse<ProductSaleState>(reader.GetString("ProductSaleState")),
+                    reader.GetDecimal("EndPrice"),
                     Email.Of(reader.GetString("Email")),
                     additionId != Guid.Empty ? additionId : null,
                     orderId));

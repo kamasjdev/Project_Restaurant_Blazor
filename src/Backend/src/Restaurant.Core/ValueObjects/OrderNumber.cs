@@ -6,16 +6,16 @@ namespace Restaurant.Core.ValueObjects
     {
         public string Value { get; }
 
-        public OrderNumber(string productName)
+        public OrderNumber(string? orderNumber)
         {
-            ValidProductName(productName);
-            Value = productName;
+            ValidOrderNumber(orderNumber);
+            Value = orderNumber;
         }
 
         public static implicit operator string(OrderNumber orderNumber)
             => orderNumber.Value;
 
-        public static implicit operator OrderNumber(string value)
+        public static implicit operator OrderNumber(string? value)
             => new(value);
 
         public override bool Equals(object? obj)
@@ -42,7 +42,7 @@ namespace Restaurant.Core.ValueObjects
             yield return Value;
         }
 
-        private static void ValidProductName(string? productName)
+        private static void ValidOrderNumber(string? productName)
         {
             if (string.IsNullOrWhiteSpace(productName))
             {

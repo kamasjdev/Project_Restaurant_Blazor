@@ -6,16 +6,16 @@ namespace Restaurant.Core.ValueObjects
     {
         public string Value { get; }
 
-        public ProductName(string productName)
+        public ProductName(string? productName)
         {
             ValidProductName(productName);
-            Value = productName;
+            Value = productName!;
         }
 
         public static implicit operator string(ProductName productName)
             => productName.Value;
 
-        public static implicit operator ProductName(string value)
+        public static implicit operator ProductName(string? value)
             => new(value);
 
         public override bool Equals(object? obj)

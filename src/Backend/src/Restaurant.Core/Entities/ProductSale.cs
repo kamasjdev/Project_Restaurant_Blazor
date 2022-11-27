@@ -31,13 +31,14 @@ namespace Restaurant.Core.Entities
             Email = email;
         }
 
-        public ProductSale(EntityId? id, EntityId productId, ProductSaleState productSaleState, Email email, EntityId? additionId = null, EntityId? orderId = null)
+        public ProductSale(EntityId? id, EntityId productId, ProductSaleState productSaleState, decimal endPrice, Email email, EntityId? additionId = null, EntityId? orderId = null)
             : base(id)
         {
             ProductId = productId;
             OrderId = orderId;
             AdditionId = additionId;
             ProductSaleState = productSaleState;
+            EndPrice = endPrice;
             Email = email;
         }
 

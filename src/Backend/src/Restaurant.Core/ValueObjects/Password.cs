@@ -8,16 +8,16 @@ namespace Restaurant.Core.ValueObjects
         public static readonly Regex PasswordRegex = new("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d\\w\\W]{8,}$");
         public string Value { get; }
 
-        public Password(string password)
+        public Password(string? password)
         {
             ValidPassword(password);
-            Value = password;
+            Value = password!;
         }
 
         public static implicit operator string(Password password)
             => password.Value;
 
-        public static implicit operator Password(string value)
+        public static implicit operator Password(string? value)
             => new(value);
 
         public override bool Equals(object? obj)
