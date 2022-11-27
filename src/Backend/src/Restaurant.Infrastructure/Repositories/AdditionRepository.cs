@@ -1,6 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Dapper;
+using Microsoft.Extensions.Logging;
 using Restaurant.Core.Entities;
 using Restaurant.Core.Repositories;
+using Restaurant.Core.ValueObjects;
+using Restaurant.Infrastructure.Repositories.DBO;
 using System.Data;
 using System.Data.Common;
 
@@ -20,91 +23,63 @@ namespace Restaurant.Infrastructure.Repositories
         public Task AddAsync(Addition addition)
         {
             var sql = "INSERT INTO additions (Id, AdditionName, Price, AdditionKind) VALUES (@Id, @AdditionName, @Price, @AdditionKind)";
-            var command = _dbConnection.CreateCommand();
-            command.CommandText = sql;
-            command.CommandType = CommandType.Text;
-            command.AddParameter("@Id", addition.Id.Value);
-            command.AddParameter("@AdditionName", addition.AdditionName.Value);
-            command.AddParameter("@Price", addition.Price.Value);
-            command.AddParameter("@AdditionKind", addition.AdditionKind.ToString());
             _logger.LogInformation($"Infrastructure: Invoking query: {sql}");
-            return command.ExecuteScalarAsync();
+            return _dbConnection.ExecuteAsync(sql, new { Id = addition.Id.Value, AdditionName = addition.AdditionName.Value, Price = addition.Price.Value, 
+                       AdditionKind = addition.AdditionKind.ToString() });
         }
 
         public Task DeleteAsync(Addition addition)
         {
             var sql = "DELETE FROM additions WHERE Id = @Id";
-            var command = _dbConnection.CreateCommand();
-            command.CommandText = sql;
-            command.CommandType = CommandType.Text;
-            command.AddParameter("@Id", addition.Id.Value);
             _logger.LogInformation($"Infrastructure: Invoking query: {sql}");
-            return command.ExecuteScalarAsync();
+            return _dbConnection.ExecuteAsync(sql, new { Id = addition.Id.Value });
         }
 
         public async Task<IEnumerable<Addition>> GetAllAsync()
         {
             var sql = "SELECT Id, AdditionName, Price, AdditionKind FROM additions";
-            var command = _dbConnection.CreateCommand();
-            command.CommandText = sql;
-            command.CommandType = CommandType.Text;
             _logger.LogInformation($"Infrastructure: Invoking query: {sql}");
-            using var reader = await command.ExecuteReaderAsync();
-
-            if (!reader.HasRows)
-            {
-                return new List<Addition>();
-            }
-
-            var list = new List<Addition>();
-            while (reader.Read())
-            {
-                list.Add(new Addition(reader.GetGuid("Id"),
-                    reader.GetString("AdditionName"), reader.GetDecimal("Price"),
-                    reader.GetString("AdditionKind")));
-            }
-
-            return list;
+            return (await _dbConnection.QueryAsync<AdditionDBO>(sql))
+                .Select(a => new Addition(a.Id, a.AdditionName, a.Price, a.AdditionKind));
         }
 
         public async Task<Addition?> GetAsync(Guid id)
         {
-            var sql = "SELECT Id, AdditionName, Price, AdditionKind FROM additions WHERE Id = @Id";
-            var command = _dbConnection.CreateCommand();
-            command.CommandText = sql;
-            command.CommandType = CommandType.Text;
-            command.AddParameter("@Id", id);
+            var sql = """
+                        SELECT a.Id, a.AdditionName, a.Price, a.AdditionKind,
+                        ps.Id
+                        FROM additions a
+                        LEFT JOIN product_sales ps on a.Id = ps.AdditionId
+                        WHERE a.Id = @Id
+                      """;
             _logger.LogInformation($"Infrastructure: Invoking query: {sql}");
-            using var reader = await command.ExecuteReaderAsync();
-            Addition? addition = null;
 
-            if (!reader.HasRows)
+            var lookup = new Dictionary<Guid, AdditionDBO>();
+            var addition = (await _dbConnection.QueryAsync<AdditionDBO, ProductSaleDBO, AdditionDBO>(sql, (a, ps) =>
             {
+                AdditionDBO addition;
+                if (!lookup.TryGetValue(a.Id, out addition!))
+                {
+                    lookup.Add(id, addition = a);
+                }
+
+                if (ps is not null)
+                {
+                    addition.ProductSales.Add(ps);
+                }
+
                 return addition;
-            }
-
-            while (reader.Read())
-            {
-                addition = new Addition(reader.GetGuid("Id"),
-                    reader.GetString("AdditionName"), reader.GetDecimal("Price"),
-                    reader.GetString("AdditionKind"));
-            }
-
-            return addition;
+            }, new { Id = id })).FirstOrDefault();
+            return addition is not null ?
+                new Addition(addition.Id, addition.AdditionName, addition.Price, addition.AdditionKind, addition.ProductSales?.Select(ps => new EntityId(ps.Id)))
+                : null;
         }
 
         public Task UpdateAsync(Addition addition)
         {
             var sql = "UPDATE additions SET AdditionName = @AdditionName, Price = @Price, AdditionKind = @AdditionKind WHERE Id = @Id";
-            var command = _dbConnection.CreateCommand();
-            command.CommandText = sql;
-            command.CommandType = CommandType.Text;
-            command.AddParameter("@Id", addition.Id.Value);
-            command.AddParameter("@AdditionName", addition.AdditionName.Value);
-            command.AddParameter("@Price", addition.Price.Value);
-            command.AddParameter("@AdditionKind", addition.AdditionKind.ToString());
             _logger.LogInformation($"Infrastructure: Invoking query: {sql}");
-            return command.ExecuteScalarAsync();
+            return _dbConnection.ExecuteAsync(sql, new { Id = addition.Id.Value, AdditionName = addition.AdditionName.Value, Price = addition.Price.Value, AdditionKind = addition.AdditionKind.ToString() });
         }
     }
 }
