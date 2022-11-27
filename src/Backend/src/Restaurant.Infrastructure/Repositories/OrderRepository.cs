@@ -99,20 +99,12 @@ namespace Restaurant.Infrastructure.Repositories
             var productSaleIds = new List<EntityId>();
             while (reader.Read())
             {
-                if (order is null)
-                {
-                    order = ConstructOrderFromQuery(reader, "o", productSales);
-                }
+                order ??= ConstructOrderFromQuery(reader, "o", productSales);
 
                 var productSaleId = reader.GetSafeGuid("ps.Id");
                 var productSaleExists = productSales.SingleOrDefault(ps => ps.Id == productSaleId);
 
-                if (productSaleExists is not null)
-                {
-                    continue;
-                }
-
-                if (productSaleId is null)
+                if (productSaleExists is not null || productSaleId is null)
                 {
                     continue;
                 }
