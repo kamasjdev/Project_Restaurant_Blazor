@@ -21,6 +21,54 @@ namespace Restaurant.IntegrationTests.RepositoryTests
             additionAdded.AdditionKind.ShouldBe(addition.AdditionKind);
         }
 
+        [Fact]
+        public async Task should_update_addition()
+        {
+            var addition = await AddDefaultAdditionAsync();
+            addition.ChangeAdditionName("Name");
+            addition.ChangePrice(12000M);
+
+            await _additonRepository.UpdateAsync(addition);
+
+            var additionAdded = await _additonRepository.GetAsync(addition.Id);
+            additionAdded.ShouldNotBeNull();
+            additionAdded.Price.Value.ShouldBe(addition.Price.Value);
+            additionAdded.AdditionName.Value.ShouldBe(addition.AdditionName.Value);
+        }
+
+        [Fact]
+        public async Task should_delete_addition()
+        {
+            var addition = await AddDefaultAdditionAsync();
+
+            await _additonRepository.DeleteAsync(addition);
+
+            var additionDeleted = await _additonRepository.GetAsync(addition.Id);
+            additionDeleted.ShouldBeNull();
+        }
+
+        [Fact]
+        public async Task should_get_all_additions()
+        {
+            await AddDefaultAdditionAsync();
+            await AddDefaultAdditionAsync();
+
+            var additions = await _additonRepository.GetAllAsync();
+
+            additions.ShouldNotBeNull();
+            additions.ShouldNotBeEmpty();
+            additions.Count().ShouldBeGreaterThan(1);
+        }
+
+        public async Task<Addition> AddDefaultAdditionAsync()
+        {
+            var count = Enum.GetNames<AdditionKind>().Length - 1;
+            var random = new Random();
+            var addition = new Addition(Guid.NewGuid(), $"Addition-{Guid.NewGuid()}", 100M, (AdditionKind) random.Next(0, count));
+            await _additonRepository.AddAsync(addition);
+            return addition;
+        }
+
         private readonly IAdditonRepository _additonRepository;
 
         public AdditionRepositoryTests(OptionsProvider optionsProvider) : base(optionsProvider)
