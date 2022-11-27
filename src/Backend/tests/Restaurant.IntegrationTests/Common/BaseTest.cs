@@ -118,7 +118,7 @@ namespace Restaurant.IntegrationTests.Common
         public async Task<User> AddDefaultUserAsync(Email email)
         {
             _scope ??= _app.Services.CreateScope();
-            var user = new User(Guid.NewGuid(), email, "DefaultPaswword", "admin", DateTime.UtcNow);
+            var user = new User(Guid.NewGuid(), email, "DefaultPaswword", User.Roles.UserRole, DateTime.UtcNow);
             var userRepository = _scope.ServiceProvider.GetRequiredService<IUserRepository>();
             await userRepository.AddAsync(user);
             return user;

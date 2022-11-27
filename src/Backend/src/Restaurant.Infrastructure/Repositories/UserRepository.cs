@@ -101,7 +101,7 @@ namespace Restaurant.Infrastructure.Repositories
 
         public async Task<User?> GetAsync(string email)
         {
-            var sql = "SELECT Id, Email, Password, Role, CreatedAt FROM users WHERE Id = @Email";
+            var sql = "SELECT Id, Email, Password, Role, CreatedAt FROM users WHERE Email = @Email";
             var command = _dbConnection.CreateCommand();
             command.CommandText = sql;
             command.CommandType = CommandType.Text;
