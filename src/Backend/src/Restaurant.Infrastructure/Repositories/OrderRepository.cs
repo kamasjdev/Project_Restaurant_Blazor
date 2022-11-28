@@ -6,8 +6,6 @@ using Restaurant.Core.ValueObjects;
 using Restaurant.Infrastructure.Repositories.DBO;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlServerCe;
-using System.Reflection;
 
 namespace Restaurant.Infrastructure.Repositories
 {
@@ -98,31 +96,7 @@ namespace Restaurant.Infrastructure.Repositories
                 return null;
             }
 
-            var productSales = new List<ProductSale>();
-            var productSaleIds = new List<EntityId>();
-            var productSalesProperty = typeof(Product).GetField("_productSaleIds", BindingFlags.NonPublic | BindingFlags.Instance);
-            var ordersProperty = typeof(Product).GetField("_orders", BindingFlags.NonPublic | BindingFlags.Instance);
-            var additionProductSalesProperty = typeof(Addition).GetField("_productSaleIds", BindingFlags.NonPublic | BindingFlags.Instance);
-            var order = new Order(orderData.Id, orderData.OrderNumber, orderData.Created, orderData.Price, Email.Of(orderData.Email), orderData.Note, productSales);
-            var productsProperty = typeof(Order).GetField("_products", BindingFlags.NonPublic | BindingFlags.Instance);
-            productsProperty?.SetValue(order, productSales);
-
-            foreach (var productSale in orderData.ProductSales)
-            {
-                productSaleIds.Add(productSale.Id);
-                var product = new Product(productSale.Product!.Id, productSale.Product.ProductName, productSale.Product.Price, productSale.Product.ProductKind, new List<Order> { order });
-                productSalesProperty?.SetValue(product, productSaleIds);
-
-                Addition? addition = null;
-                if (productSale.Addition is not null)
-                {
-                    addition = new Addition(productSale.Addition.Id, productSale.Addition.AdditionName, productSale.Addition.Price, productSale.Addition.AdditionKind);
-                    additionProductSalesProperty?.SetValue(addition, productSaleIds);
-                }
-
-                productSales.Add(new ProductSale(productSale.Id, product, productSale.ProductSaleState, Email.Of(productSale.Email), addition, order));
-            }
-            return order;
+            return orderData.AsDetailsEntity();
         }
 
         public Task UpdateAsync(Order order)

@@ -2,11 +2,9 @@
 using Microsoft.Extensions.Logging;
 using Restaurant.Core.Entities;
 using Restaurant.Core.Repositories;
-using Restaurant.Core.ValueObjects;
 using Restaurant.Infrastructure.Repositories.DBO;
 using System.Data;
 using System.Data.Common;
-using System.Reflection;
 
 namespace Restaurant.Infrastructure.Repositories
 {
@@ -94,44 +92,7 @@ namespace Restaurant.Infrastructure.Repositories
                 return null;
             }
 
-            var orders = new List<Order>();
-            var productSaleIds = new List<EntityId>();
-            var product = new Product(productData.Id, productData.ProductName, productData.Price, productData.ProductKind);
-            var productSalesProperty = typeof(Product).GetField("_productSaleIds", BindingFlags.NonPublic | BindingFlags.Instance);
-            productSalesProperty?.SetValue(product, productSaleIds);
-            var ordersProperty = typeof(Product).GetField("_orders", BindingFlags.NonPublic | BindingFlags.Instance);
-            ordersProperty?.SetValue(product, orders);
-            var additionProductSalesProperty = typeof(Addition).GetField("_productSaleIds", BindingFlags.NonPublic | BindingFlags.Instance);
-            foreach (var productSaleData in productData.ProductSales)
-            {
-                if (productSaleData.Order is null)
-                {
-                    continue;
-                }
-
-                productSaleIds.Add(productSaleData.Id);
-                Addition? addition = null;
-                if (productSaleData.Addition is not null)
-                {
-                    addition = new Addition(productSaleData.Addition.Id, productSaleData.Addition.AdditionName, productSaleData.Addition.Price, productSaleData.Addition.AdditionKind);
-                    additionProductSalesProperty?.SetValue(addition, productSaleIds);
-                }
-
-                var orderExists = orders.SingleOrDefault(o => o.Id == productSaleData.OrderId);
-
-                var productSale = new ProductSale(productSaleData.Id, product, productSaleData.ProductSaleState, Email.Of(productSaleData.Email), addition);
-                if (orderExists is not null)
-                {
-                    orderExists.AddProduct(productSale);
-                    continue;
-                }
-
-                var order = new Order(productSaleData.Order.Id, productSaleData.Order.OrderNumber, productSaleData.Order.Created, productSaleData.Order.Price, Email.Of(productSaleData.Order.Email), productSaleData.Order.Note);
-                order.AddProduct(productSale);
-                orders.Add(order);
-            }
-
-            return product;
+            return productData.AsDetailsEntity();
         }
 
         public Task UpdateAsync(Product product)

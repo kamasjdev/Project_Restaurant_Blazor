@@ -106,12 +106,7 @@ namespace Restaurant.Infrastructure.Repositories
                 return null;
             }
 
-            var productSaleIds = new List<EntityId> { new EntityId(id) };
-            Product product = new(productSaleData.Product.Id, productSaleData.Product.ProductName, productSaleData.Product.Price, productSaleData.Product.ProductKind, null, productSaleIds);
-            Addition? addition = productSaleData.Addition is not null ? new Addition(productSaleData.Addition.Id, productSaleData.Addition.AdditionName, productSaleData.Addition.Price, productSaleData.Addition.AdditionKind, productSaleIds) : null;
-            ProductSale productSale = new(productSaleData.Id, product, productSaleData.ProductSaleState, Email.Of(productSaleData.Email), addition);
-            Order? order = productSaleData.Order is not null ? new Order(productSaleData.Order.Id, productSaleData.Order.OrderNumber, productSaleData.Order.Created, productSaleData.Order.Price, Email.Of(productSaleData.Order.Email), productSaleData.Order.Note, new List<ProductSale> { productSale }) : null;
-            return productSale;
+            return productSaleData.AsDetailsEntity();
         }
 
         public Task UpdateAsync(ProductSale productSale)
