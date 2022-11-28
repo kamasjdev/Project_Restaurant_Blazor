@@ -1,7 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Dapper;
+using Microsoft.Extensions.Logging;
 using Restaurant.Core.Entities;
 using Restaurant.Core.Repositories;
 using Restaurant.Core.ValueObjects;
+using Restaurant.Infrastructure.Repositories.DBO;
 using System.Data;
 using System.Data.Common;
 using System.Reflection;
@@ -22,119 +24,110 @@ namespace Restaurant.Infrastructure.Repositories
         public Task AddAsync(Product product)
         {
             var sql = "INSERT INTO products (Id, ProductName, Price, ProductKind) VALUES (@Id, @ProductName, @Price, @ProductKind)";
-            var command = _dbConnection.CreateCommand();
-            command.CommandText = sql;
-            command.CommandType = CommandType.Text;
-            command.AddParameter("@Id", product.Id.Value);
-            command.AddParameter("@ProductName", product.ProductName.Value);
-            command.AddParameter("@Price", product.Price.Value);
-            command.AddParameter("@ProductKind", product.ProductKind.ToString());
             _logger.LogInformation($"Infrastructure: Invoking query: {sql}");
-            return command.ExecuteScalarAsync();
+            return _dbConnection.ExecuteAsync(sql, new
+            {
+                Id = product.Id.Value,
+                ProductName = product.ProductName.Value,
+                Price = product.Price.Value,
+                ProductKind = product.ProductKind.ToString()
+            });
         }
 
         public Task DeleteAsync(Product product)
         {
             var sql = "DELETE FROM products WHERE Id = @Id";
-            var command = _dbConnection.CreateCommand();
-            command.CommandText = sql;
-            command.CommandType = CommandType.Text;
-            command.AddParameter("@Id", product.Id.Value);
             _logger.LogInformation($"Infrastructure: Invoking query: {sql}");
-            return command.ExecuteScalarAsync();
+            return _dbConnection.ExecuteAsync(sql, new { Id = product.Id.Value });
         }
 
         public async Task<IEnumerable<Product>> GetAllAsync()
         {
             var sql = "SELECT Id, ProductName, Price, ProductKind FROM products";
-            var command = _dbConnection.CreateCommand();
-            command.CommandText = sql;
-            command.CommandType = CommandType.Text;
             _logger.LogInformation($"Infrastructure: Invoking query: {sql}");
-            using var reader = await command.ExecuteReaderAsync();
-
-            if (!reader.HasRows)
-            {
-                return new List<Product>();
-            }
-
-            var list = new List<Product>();
-            while (reader.Read())
-            {
-                list.Add(ConstructProductFromQuery(reader));
-            }
-
-            return list;
+            return (await _dbConnection.QueryAsync<ProductDBO>(sql))
+                           .Select(p => new Product(p.Id, p.ProductName, p.Price, p.ProductKind));
         }
 
         public async Task<Product?> GetAsync(Guid id)
         {
             var sql = """
-                        SELECT p.Id as `p.Id`, p.ProductName as `p.ProductName`, p.Price as `p.Price`, p.ProductKind as `p.ProductKind`, 
-                        ps.Id as `ps.Id`, ps.ProductId as `ps.ProductId`, ps.AdditionId as `ps.AdditionId`, ps.EndPrice as `ps.EndPrice`, ps.OrderId as `ps.OrderId`, ps.ProductSaleState as `ps.ProductSaleState`, ps.Email as `ps.Email`,
-                        a.Id as `a.Id`, a.AdditionName as `a.AdditionName`, a.Price as `a.Price`, a.AdditionKind as `a.AdditionKind`, 
-                        o.Id as `o.Id`, o.OrderNumber as `o.OrderNumber`, o.Created as `o.Created`, o.Price as `o.Price`, o.Email as `o.Email`, o.Note as `o.Note`
+                        SELECT p.Id, p.ProductName, p.Price, p.ProductKind, 
+                        ps.Id, ps.ProductId, ps.AdditionId, ps.EndPrice, ps.OrderId, ps.ProductSaleState, ps.Email,
+                        a.Id, a.AdditionName, a.Price, a.AdditionKind, 
+                        o.Id, o.OrderNumber, o.Created, o.Price, o.Email, o.Note
                         FROM products p
                         LEFT JOIN product_sales ps ON ps.ProductId = p.Id
                         LEFT JOIN additions a on ps.AdditionId = a.Id
                         LEFT JOIN orders o ON o.Id = ps.OrderId
                         WHERE p.Id = @Id
                         """;
-            var command = _dbConnection.CreateCommand();
-            command.CommandText = sql;
-            command.CommandType = CommandType.Text;
-            command.AddParameter("@Id", id);
-            _logger.LogInformation($"Infrastructure: Invoking query: {sql}");
-            using var reader = await command.ExecuteReaderAsync();
-
-            Product? product = null;
-            if (!reader.HasRows)
+            var lookup = new Dictionary<Guid, ProductDBO>();
+            var productData = (await _dbConnection.QueryAsync<ProductDBO, ProductSaleDBO, AdditionDBO, OrderDBO, ProductDBO>(sql, (p, ps, a, o) =>
             {
+                ProductDBO product;
+                if (!lookup.TryGetValue(p.Id, out product!))
+                {
+                    lookup.Add(id, product = p);
+                }
+
+                if (ps is not null)
+                {
+                    product.ProductSales.Add(ps);
+                }
+
+                if (a is not null)
+                {
+                    ps!.Addition = a;
+                }
+
+                if (o is not null)
+                {
+                    ps!.Order = o;
+                }
+
                 return product;
+            }, new { Id = id })).FirstOrDefault();
+
+            if (productData is null)
+            {
+                return null;
             }
 
             var orders = new List<Order>();
-            var productSales = new List<ProductSale>();
             var productSaleIds = new List<EntityId>();
-            while (reader.Read())
+            var product = new Product(productData.Id, productData.ProductName, productData.Price, productData.ProductKind);
+            var productSalesProperty = typeof(Product).GetField("_productSaleIds", BindingFlags.NonPublic | BindingFlags.Instance);
+            productSalesProperty?.SetValue(product, productSaleIds);
+            var ordersProperty = typeof(Product).GetField("_orders", BindingFlags.NonPublic | BindingFlags.Instance);
+            ordersProperty?.SetValue(product, orders);
+            var additionProductSalesProperty = typeof(Addition).GetField("_productSaleIds", BindingFlags.NonPublic | BindingFlags.Instance);
+            foreach (var productSaleData in productData.ProductSales)
             {
-                product ??= ConstructProductFromQuery(reader, "p", orders, productSaleIds);
-
-                var productSaleId = reader.GetSafeGuid("ps.Id");
-                var productSaleExists = productSales.SingleOrDefault(ps => ps.Id == productSaleId);
-
-                if (productSaleExists is not null || productSaleId is null)
+                if (productSaleData.Order is null)
                 {
                     continue;
                 }
 
-                Order? order = null;
+                productSaleIds.Add(productSaleData.Id);
                 Addition? addition = null;
-                var additionId = reader.GetSafeGuid("a.Id");
-
-                if (additionId is not null)
+                if (productSaleData.Addition is not null)
                 {
-                    addition = ConstructAdditionFromQuery(reader, "a", productSaleIds);
+                    addition = new Addition(productSaleData.Addition.Id, productSaleData.Addition.AdditionName, productSaleData.Addition.Price, productSaleData.Addition.AdditionKind);
+                    additionProductSalesProperty?.SetValue(addition, productSaleIds);
                 }
 
-                var productSale = ConstructProductSaleFromQuery(reader, "ps", product, addition, order);
-                productSales.Add(productSale);
-                productSaleIds.Add(productSaleId);
+                var orderExists = orders.SingleOrDefault(o => o.Id == productSaleData.OrderId);
 
-                var orderId = reader.GetSafeGuid("o.Id");
-                var orderExists = orders.SingleOrDefault(o => o.Id == orderId);
+                var productSale = new ProductSale(productSaleData.Id, product, productSaleData.ProductSaleState, Email.Of(productSaleData.Email), addition);
                 if (orderExists is not null)
                 {
                     orderExists.AddProduct(productSale);
                     continue;
                 }
 
-                if (orderId is null)
-                {
-                    continue;
-                }
-
-                order = ConstructOrderFromQuery(reader, "o", productSales.Where(o => o.Order is null).ToList());
+                var order = new Order(productSaleData.Order.Id, productSaleData.Order.OrderNumber, productSaleData.Order.Created, productSaleData.Order.Price, Email.Of(productSaleData.Order.Email), productSaleData.Order.Note);
+                order.AddProduct(productSale);
                 orders.Add(order);
             }
 
@@ -144,80 +137,9 @@ namespace Restaurant.Infrastructure.Repositories
         public Task UpdateAsync(Product product)
         {
             var sql = "UPDATE products SET ProductName = @ProductName, Price = @Price, ProductKind = @ProductKind WHERE Id = @Id";
-            var command = _dbConnection.CreateCommand();
-            command.CommandText = sql;
-            command.CommandType = CommandType.Text;
-            command.AddParameter("@Id", product.Id.Value);
-            command.AddParameter("@ProductName", product.ProductName.Value);
-            command.AddParameter("@Price", product.Price.Value);
-            command.AddParameter("@ProductKind", product.ProductKind.ToString());
             _logger.LogInformation($"Infrastructure: Invoking query: {sql}");
-            return command.ExecuteScalarAsync();
-        }
-
-        private Order ConstructOrderFromQuery(DbDataReader reader, string? prefix = null, List<ProductSale>? productSales = null)
-        {
-            var searchPrefix = string.IsNullOrEmpty(prefix) ? string.Empty : $"{prefix}.";
-            var order = new Order(reader.GetGuid($"{searchPrefix}Id"),
-                        reader.GetString($"{searchPrefix}OrderNumber"),
-                        reader.GetDateTime($"{searchPrefix}Created"),
-                        reader.GetDecimal($"{searchPrefix}Price"),
-                            Email.Of(reader.GetString($"{searchPrefix}Email")),
-                            reader.GetSafeString($"{searchPrefix}Note"));
-
-            if (productSales is not null)
-            {
-                var productsField = typeof(Order).GetField("_products", BindingFlags.NonPublic | BindingFlags.Instance);
-                productsField?.SetValue(order, productSales);
-            }
-
-            return order;
-        }
-
-        private Product ConstructProductFromQuery(DbDataReader reader, string? prefix = null, List<Order>? orders = null, List<EntityId>? productSaleIds = null)
-        {
-            var searchPrefix = string.IsNullOrEmpty(prefix) ? string.Empty : $"{prefix}.";
-            var product = new Product(reader.GetGuid($"{searchPrefix}Id"),
-                    reader.GetString($"{searchPrefix}ProductName"),
-                    reader.GetDecimal($"{searchPrefix}Price"),
-                        reader.GetString($"{searchPrefix}ProductKind"));
-
-            if (orders is not null)
-            {
-                var ordersField = typeof(Product).GetField("_orders", BindingFlags.NonPublic | BindingFlags.Instance);
-                ordersField?.SetValue(product, orders);
-            }
-
-            if (productSaleIds is not null)
-            {
-                var productSaleIdsField = typeof(Product).GetField("_productSaleIds", BindingFlags.NonPublic | BindingFlags.Instance);
-                productSaleIdsField?.SetValue(product, productSaleIds);
-            }
-
-            return product;
-        }
-
-        private Addition ConstructAdditionFromQuery(DbDataReader reader, string prefix, List<EntityId>? productSaleIds = null)
-        {
-            var searchPrefix = string.IsNullOrEmpty(prefix) ? string.Empty : $"{prefix}.";
-            var addition = new Addition(reader.GetGuid($"{searchPrefix}Id"), reader.GetString($"{searchPrefix}AdditionName"), reader.GetDecimal($"{searchPrefix}Price"),
-                        reader.GetString($"{searchPrefix}AdditionKind"));
-
-            if (productSaleIds is not null)
-            {
-                var additionProductSaleIdsField = typeof(Addition).GetField("_productSaleIds", BindingFlags.NonPublic | BindingFlags.Instance);
-                additionProductSaleIdsField?.SetValue(addition, productSaleIds);
-            }
-            return addition;
-        }
-
-        private ProductSale ConstructProductSaleFromQuery(DbDataReader reader, string prefix, Product product, Addition? addition = null, Order? order = null)
-        {
-            var searchPrefix = string.IsNullOrEmpty(prefix) ? string.Empty : $"{prefix}.";
-            return new ProductSale(reader.GetGuid("ps.Id"),
-                    product, Enum.Parse<ProductSaleState>(reader.GetString($"{searchPrefix}ProductSaleState")),
-                    Email.Of(reader.GetString($"{searchPrefix}Email")),
-                    addition, order);
+            return _dbConnection.ExecuteAsync(sql, new { Id = product.Id.Value, ProductName = product.ProductName.Value, Price = product.Price.Value, 
+                    ProductKind = product.ProductKind.ToString() });
         }
     }
 }

@@ -10,7 +10,7 @@ namespace Restaurant.Core.Entities
         public string Role { get; private set; }
         public DateTime CreatedAt { get; }
 
-        public User(EntityId id, Email email, string password, string role, DateTime createdAt)
+        public User(EntityId? id, Email? email, string? password, string? role, DateTime createdAt)
             : base(id)
         {
             ChangeEmail(email);
@@ -19,17 +19,17 @@ namespace Restaurant.Core.Entities
             CreatedAt = createdAt;
         }
 
-        public void ChangeEmail(Email email)
+        public void ChangeEmail(Email? email)
         {
-            Email = email;
+            Email = email ?? throw new InvalidEmailException(string.Empty);
         }
 
-        public void ChangePassword(string password)
+        public void ChangePassword(string? password)
         {
-            Password = password;
+            Password = password ?? throw new InvalidPasswordException();
         }
 
-        public void ChangeRole(string role)
+        public void ChangeRole(string? role)
         {
             if (string.IsNullOrWhiteSpace(role))
             {

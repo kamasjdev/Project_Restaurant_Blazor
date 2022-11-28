@@ -9,6 +9,5 @@ namespace Restaurant.Infrastructure.Repositories.DBO
         public decimal Price { get; set; }
         public ProductKind ProductKind { get; set; }
         public IList<ProductSaleDBO> ProductSales { get; set; } = new List<ProductSaleDBO>();
-        public IList<Guid> ProductSaleIds { get; set; } = new List<Guid>();
     }
 }
