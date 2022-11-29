@@ -1,6 +1,9 @@
 ﻿@page "/fetchdata"
+@using Google.Protobuf.WellKnownTypes;
 @using Restaurant.Shared
+@using Restaurant.Shared.AdditionProto;
 @inject WeatherForecasts.WeatherForecastsClient WeatherForecastsClient
+@inject Additions.AdditionsClient AdditionsClient
 
 <h1>Weather forecast</h1>
 <p>This component demonstrates fetching data from the server.</p>
@@ -38,5 +41,6 @@ else
 	protected override async Task OnInitializedAsync()
 	{
 		forecasts = (await WeatherForecastsClient.GetWeatherAsync(new WeatherForecast())).Forecasts;
+		await AdditionsClient.GetAdditionsAsync(new Empty());
 	}
 }
