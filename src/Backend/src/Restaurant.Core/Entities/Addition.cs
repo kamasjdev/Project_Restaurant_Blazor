@@ -50,7 +50,7 @@ namespace Restaurant.Core.Entities
             Price = price;
         }
 
-        public void ChangeAdditionKind(string additionKind)
+        public void ChangeAdditionKind(string? additionKind)
         {
             var parsed = Enum.TryParse<AdditionKind>(additionKind, out var additionKindParsed);
 

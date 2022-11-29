@@ -1,12 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Builder;
+using Restaurant.Infrastructure.Grpc.Services;
 
 namespace Restaurant.Infrastructure.Grpc
 {
-    internal class Extensions
+    internal static class Extensions
     {
+        public static WebApplication UseGrpc(this WebApplication app)
+        {
+            app.UseGrpcWeb();
+            app.MapGrpcService<WeatherService>()
+                .EnableGrpcWeb();
+            app.MapGrpcService<AdditionGrpcService>()
+                .EnableGrpcWeb();
+            return app;
+        }
     }
 }

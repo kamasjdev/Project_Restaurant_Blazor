@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Restaurant.Infrastructure.Database;
 using Restaurant.Infrastructure.Documentation;
 using Restaurant.Infrastructure.Exceptions;
+using Restaurant.Infrastructure.Grpc;
 using Restaurant.Infrastructure.Grpc.Services;
 using Restaurant.Infrastructure.Time;
 
@@ -35,8 +36,7 @@ namespace Restaurant.Infrastructure
             app.UseDocs();
             app.UseErrorHandling();
             app.UseAuthorization();
-            app.UseGrpcWeb();
-            app.MapGrpcService<WeatherService>().EnableGrpcWeb();
+            app.UseGrpc();
             app.MapControllers();
             return app;
         }
