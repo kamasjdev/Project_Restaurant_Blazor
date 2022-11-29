@@ -1,0 +1,53 @@
+﻿syntax = "proto3"; 
+option csharp_namespace = "Restaurant.Shared.ProductProto"; 
+package Product;
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto"; 
+
+service Products { 
+	rpc GetProduct (GetProductRequest) returns (ProductDetails);
+	rpc GetProducts (google.protobuf.Empty) returns (GetProductsResponse);
+	rpc UpdateProduct (Product) returns (google.protobuf.Empty);
+	rpc AddProduct (Product) returns (AddProductResponse);
+	rpc DeleteProduct (DeleteProductRequest) returns (google.protobuf.Empty);
+} 
+
+message GetProductRequest { 
+	string id = 1; 
+} 
+
+message GetProductsResponse {
+    repeated Product product = 1;
+}
+
+message AddProductResponse {
+	string id = 1;
+}
+
+message Product {
+	string id = 1;
+    string productName = 2;
+    string price = 3;
+    string productKind = 4;
+}
+
+message ProductDetails {
+    string id = 1;
+    string productName = 2;
+    string price = 3;
+    string productKind = 4;
+	repeated Order orders = 5;
+}
+
+message Order {
+    string Id = 1;
+    string orderNumber = 2;
+    google.protobuf.Timestamp created = 3;
+    string price = 4;
+    string email = 5;
+    string note = 6;
+}
+
+message DeleteProductRequest {
+	string id = 1;
+}

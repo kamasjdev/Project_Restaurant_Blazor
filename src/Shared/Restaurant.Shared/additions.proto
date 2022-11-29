@@ -1,0 +1,35 @@
+﻿syntax = "proto3"; 
+option csharp_namespace = "Restaurant.Shared.AdditionProto"; 
+package Addition;
+import "google/protobuf/empty.proto";
+
+service Additions { 
+	rpc GetAddition (GetAdditionRequest) returns (Addition);
+	rpc GetAdditions (google.protobuf.Empty) returns (GetAdditionsResponse);
+	rpc UpdateAddition (Addition) returns (google.protobuf.Empty);
+	rpc AddAddition (Addition) returns (AddAdditionResponse);
+	rpc DeleteAddition (DeleteAdditionRequest) returns (google.protobuf.Empty);
+} 
+
+message GetAdditionRequest { 
+	string id = 1; 
+} 
+
+message GetAdditionsResponse {
+	repeated Addition additions = 1;
+}
+
+message Addition { 
+	string id = 1;
+    string additionName = 2;
+    string price = 3;
+    string additionKind = 4;
+}
+
+message AddAdditionResponse {
+	string id = 1;
+}
+
+message DeleteAdditionRequest {
+	string id = 1;
+}

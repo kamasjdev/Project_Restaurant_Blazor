@@ -1,0 +1,77 @@
+﻿syntax = "proto3"; 
+option csharp_namespace = "Restaurant.Shared.ProductSaleProto"; 
+package ProductSale;
+import "google/protobuf/empty.proto";
+
+service ProductSales { 
+	rpc GetProductSale (GetProductSaleRequest) returns (ProductSale);
+	rpc GetProductSales (google.protobuf.Empty) returns (GetProductSalesResponse);
+	rpc UpdateProduct (AddProductSaleRequest) returns (google.protobuf.Empty);
+	rpc AddProduct (AddProductSaleRequest) returns (AddProductSaleResponse);
+	rpc DeleteProductSale (DeleteProductSaleRequest) returns (google.protobuf.Empty);
+} 
+
+message GetProductSaleRequest { 
+	string id = 1; 
+} 
+
+message GetProductSalesResponse {
+    repeated ProductSale productSale = 1;
+}
+
+message ProductSale {
+    string id = 1;
+    Addition addition = 2;
+    Product product = 3;
+    string endPrice = 4;
+    Order order = 5;
+    string productSaleState = 6;
+    string email = 7;
+}
+
+message Addition { 
+	string id = 1;
+    string additionName = 2;
+    string price = 3;
+    string additionKind = 4;
+}
+
+message Product {
+	string id = 1;
+    string productName = 2;
+    string price = 3;
+    string productKind = 4;
+}
+
+message ProductDetails {
+    string id = 1;
+    string productName = 2;
+    string price = 3;
+    string productKind = 4;
+	repeated Order orders = 5;
+}
+
+message Order {
+    string Id = 1;
+    string orderNumber = 2;
+    google.protobuf.Timestamp created = 3;
+    string price = 4;
+    string email = 5;
+    string note = 6;
+}
+
+message AddProductSaleRequest {
+    string id = 1;
+    string productId = 2;
+    string additionId = 3;
+    string orderId = 4;
+    string email = 5;
+}
+
+message AddProductResponse {
+	string id = 1;
+}
+
+message DeleteProductSaleRequest {
+	string id = 1;
+}

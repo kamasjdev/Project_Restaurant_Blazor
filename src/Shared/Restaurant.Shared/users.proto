@@ -1,0 +1,70 @@
+﻿syntax = "proto3"; 
+option csharp_namespace = "Restaurant.Shared.UserProto"; 
+package User;
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto"; 
+
+service Users { 
+	rpc SignIn (SignInRequest) returns (SignInResponse);
+	rpc SignUp (SignUpRequest) returns (google.protobuf.Empty);
+	rpc GetUser (GetUserRequest) returns (User);
+	rpc GetUsers (google.protobuf.Empty) returns (GetUsersResponse);
+	rpc UpdateUser (UpdateUserRequest) returns (google.protobuf.Empty);
+	rpc ChangeUserEmail (ChangeUserEmailRequest) returns (google.protobuf.Empty);
+	rpc ChangeUserPassword (ChangeUserPasswordRequest) returns (google.protobuf.Empty);
+	rpc UpdateUserRole (UpdateUserRoleRequest) returns (google.protobuf.Empty);
+} 
+
+message SignInRequest {
+	string email = 1;
+	string password = 2;
+}
+
+message SignInResponse {
+    string accessToken = 1;
+}
+
+message SignUpRequest {
+    string email = 1;
+	string password = 2;
+	string role = 3;
+}
+
+message GetUserRequest { 
+	string id = 1; 
+} 
+
+message GetUsersResponse {
+	repeated User users = 1;
+}
+
+message User { 
+	string id = 1;
+    string email = 2;
+    string role = 3;
+    google.protobuf.Timestamp createdAt = 4;
+}
+
+message UpdateUserRequest {
+	string userId = 1;
+	string email = 2;
+	string password = 3; 
+	string role = 4;
+}
+
+message ChangeUserEmailRequest {
+	string userId = 1;
+	string email = 2;
+}
+
+message ChangeUserPasswordRequest {
+	string userId = 1;
+	string password = 2;
+	string newPassword = 3;
+	string newPasswordConfirm = 4;
+}
+
+message UpdateUserRoleRequest {
+	string userId = 1;
+	string Role = 2;
+}
