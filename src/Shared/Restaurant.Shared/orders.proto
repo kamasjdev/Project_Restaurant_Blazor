@@ -65,6 +65,13 @@ message Addition {
 
 message AddOrderRequest {
 	string id = 1;
+    string email = 2;
+    string note = 3;
+    repeated ProductSaleId productSaleIds = 4;
+}
+
+message ProductSaleId {
+    string id = 1;
 }
 
 message AddOrderResponse {

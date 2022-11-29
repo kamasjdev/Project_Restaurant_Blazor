@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Restaurant.Application.Abstractions;
+using Restaurant.Core.Entities;
 using System.Text;
 
 namespace Restaurant.Infrastructure.Security
@@ -41,7 +44,10 @@ namespace Restaurant.Infrastructure.Security
                 });
             });
 
-            return services;
+            services.AddSingleton<IJwtManager, JwtManager>();
+            services.AddSingleton<IPasswordManager, PasswordManager>();
+			services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
+			return services;
         }
     }
 }

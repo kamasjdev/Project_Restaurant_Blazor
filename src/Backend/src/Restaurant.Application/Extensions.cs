@@ -12,6 +12,10 @@ namespace Restaurant.Application
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
             services.AddScoped<IAdditionService, AdditionService>();
+            services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IProductSaleService, ProductSaleService>();
+            services.AddScoped<IUserService, UserService>();
             return services;
         }
     }

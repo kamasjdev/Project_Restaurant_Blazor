@@ -12,6 +12,14 @@ namespace Restaurant.Infrastructure.Grpc
                 .EnableGrpcWeb();
             app.MapGrpcService<AdditionGrpcService>()
                 .EnableGrpcWeb();
+            app.MapGrpcService<OrderGrpcService>()
+                .EnableGrpcWeb();
+            app.MapGrpcService<ProductGrpcService>()
+                .EnableGrpcWeb();
+            app.MapGrpcService<ProductSaleGrpcService>()
+                .EnableGrpcWeb();
+            app.MapGrpcService<UserGrpcService>()
+                .EnableGrpcWeb();
             return app;
         }
     }

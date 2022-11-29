@@ -5,7 +5,7 @@ using Restaurant.Infrastructure.Database;
 using Restaurant.Infrastructure.Documentation;
 using Restaurant.Infrastructure.Exceptions;
 using Restaurant.Infrastructure.Grpc;
-using Restaurant.Infrastructure.Grpc.Services;
+using Restaurant.Infrastructure.Security;
 using Restaurant.Infrastructure.Time;
 
 namespace Restaurant.Infrastructure
@@ -21,7 +21,8 @@ namespace Restaurant.Infrastructure
             services.AddErrorHandling();
             services.AddDatabase(configuration);
             services.AddTime();
-            services.AddGrpc();
+            services.AddAuth(configuration);
+			services.AddGrpc();
             services.Configure<AppOptions>(configuration.GetRequiredSection("app"));
             services.AddCors(cors => cors.AddPolicy(CorsPolicy, options =>
             {

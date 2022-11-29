@@ -32,7 +32,8 @@ namespace Restaurant.Infrastructure.Grpc.Services
 			using var scope = _serviceProvider.CreateScope();
 			var additionService = scope.ServiceProvider.GetRequiredService<IAdditionService>();
 			_ = decimal.TryParse(request.Price, out var price);
-			var addition = new AdditionDto { AdditionName = request.AdditionName, Price = price, AdditionKind = request.AdditionName };
+			_ = Guid.TryParse(request.Id, out var id);
+			var addition = new AdditionDto { Id = id, AdditionName = request.AdditionName, Price = price, AdditionKind = request.AdditionName };
 			await additionService.UpdateAsync(addition);
 			return new Empty();
 		}
