@@ -17,7 +17,7 @@ message GetProductRequest {
 } 
 
 message GetProductsResponse {
-    repeated Product product = 1;
+    repeated Product products = 1;
 }
 
 message AddProductResponse {

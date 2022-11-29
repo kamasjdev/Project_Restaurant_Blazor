@@ -18,9 +18,30 @@
   <ItemGroup>
 	<SupportedPlatform Include="browser" />
 	<Protobuf Include="weather.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<SupportedPlatform Include="browser" />
 	<Protobuf Include="additions.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<SupportedPlatform Include="browser" />
 	<Protobuf Include="products.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<SupportedPlatform Include="browser" />
 	<Protobuf Include="orders.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<SupportedPlatform Include="browser" />
+    <Protobuf Include="productSales.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<SupportedPlatform Include="browser" />
 	<Protobuf Include="users.proto" />
   </ItemGroup>
 
