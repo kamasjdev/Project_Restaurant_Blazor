@@ -1,0 +1,62 @@
+﻿@using System.Reflection;
+@typeparam TRowData
+
+@if (Items is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <CascadingValue IsFixed="true" Value="this">@ChildContent</CascadingValue>
+    <table class="table">
+        <thead>
+            <tr>
+                @foreach (var column in columns)
+                {
+                    @column.HeaderTemplate
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @if (Items is not null)
+            {
+                var index = 0;
+                foreach (var item in Items)
+                {
+                    <tr @key="item.GetHashCode()" class="@(RowClass?.Invoke(item, index++))">
+                        @foreach (var column in columns)
+                        {
+                            @column.CellTemplate(item)
+                        }
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter]
+    public ICollection<TRowData>? Items { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public Func<TRowData, int, string>? RowClass { get; set; }
+
+    private readonly List<DataColumn<TRowData>> columns = new List<DataColumn<TRowData>>();
+
+    internal void AddColumn(DataColumn<TRowData> column)
+    {
+        columns.Add(column);
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            StateHasChanged();
+        }
+    }
+}
