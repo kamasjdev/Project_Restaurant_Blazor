@@ -1,9 +1,10 @@
 ﻿@using System.Reflection;
+@using Restaurant.UI.Components.LoadingIcon
 @typeparam TRowData
 
 @if (Items is null)
 {
-    <p><em>Loading...</em></p>
+    <LoadingIconComponent />
 }
 else
 {
@@ -46,15 +47,23 @@ else
     public Func<TRowData, int, string>? RowClass { get; set; }
 
     private readonly List<DataColumn<TRowData>> columns = new List<DataColumn<TRowData>>();
+    private int columnsSize = 0;
 
     internal void AddColumn(DataColumn<TRowData> column)
     {
         columns.Add(column);
     }
 
+    private bool IsColumsChanged()
+    {
+        var previousColumnsSize = columnsSize;
+        columnsSize = columns.Count;
+        return Items is not null && columnsSize != previousColumnsSize;
+    }
+
     protected override void OnAfterRender(bool firstRender)
     {
-        if (firstRender)
+        if (IsColumsChanged())
         {
             StateHasChanged();
         }
