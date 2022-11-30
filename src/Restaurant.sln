@@ -29,7 +29,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Frontend", "Frontend", "{59
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Restaurant.Shared", "Shared\Restaurant.Shared\Restaurant.Shared.csproj", "{B646DD6C-56F6-4ADC-8ABF-98E927436004}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Restaurant.UI", "Frontend\Restaurant.UI\Restaurant.UI.csproj", "{A6305CC7-ED86-40DD-A4D2-47D055EFE4B6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Restaurant.UI", "Frontend\Restaurant.UI\Restaurant.UI.csproj", "{A6305CC7-ED86-40DD-A4D2-47D055EFE4B6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
