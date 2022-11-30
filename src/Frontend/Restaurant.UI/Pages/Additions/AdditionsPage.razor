@@ -1,7 +1,36 @@
 ﻿@page "/additions"
+@using Restaurant.UI.Components.Table
+@using Restaurant.UI.DTO;
+@using Restaurant.UI.Services.Abstractions;
+@inject IAdditionService AdditionService;
 
 <h3>AdditionsPage</h3>
 
-@code {
+<TableComponent Items="additions">
+    <DataColumn TRowData="AdditionDto" Title="Id" Expression="a => a.Id" />
+    <DataColumn TRowData="AdditionDto" Title="Name" Expression="a => a.AdditionName" />
+    <DataColumn TRowData="AdditionDto" Title="Price" Expression="a => a.Price" />
+    <DataColumn TRowData="AdditionDto" Title="Kind" Expression="a => a.AdditionKind" />
+    <DataColumn TRowData="AdditionDto" Title="Action">
+        <button class="btn btn-primary me-2">
+            Details
+        </button>
+        <button class="btn btn-warning me-2">
+            Edit
+        </button>
+        <button class="btn btn-danger">
+            Delete
+        </button>
+    </DataColumn>
+</TableComponent>
 
+@code {
+    private ICollection<AdditionDto>? additions;
+
+    protected override async Task OnInitializedAsync()
+    {
+        additions = new List<AdditionDto>(await AdditionService.GetAllAsync());
+        await base.OnInitializedAsync();
+        return;
+    }
 }
