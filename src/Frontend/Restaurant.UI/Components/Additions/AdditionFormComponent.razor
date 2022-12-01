@@ -1,0 +1,104 @@
+﻿@using Restaurant.UI.Components.Validations;
+@using Restaurant.UI.DTO;
+
+<EditForm Model="@AdditionToSend" OnValidSubmit="@HandleValidSubmit">
+    <CustomValidation @ref="customValidation" />
+    <ValidationSummary />
+    <div>
+        <div>
+            <label class="d-flex">
+                Name
+            </label>
+            <InputText @bind-Value="AdditionToSend.AdditionName" class="form-control" />
+        </div>
+        <div class="mt-2">
+            <label class="d-flex">
+                Price
+            </label>
+            <InputNumber @bind-Value="AdditionToSend.Price" class="form-control" />
+        </div>
+        <div class="mt-2">
+            <label class="d-flex">
+                Kind
+            </label>
+            <InputSelect @bind-Value="AdditionToSend.AdditionKind" class="form-control">
+                <option value="Drink">Drink</option>
+                <option value="Salad">Salad</option>
+            </InputSelect>
+        </div>
+    </div>
+    <button class="btn btn-success mt-2">
+        Send
+    </button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public AdditionDto? Addition { get; set; }
+
+    [Parameter]
+    public EventCallback<AdditionDto> OnSend { get; set; }
+
+    private AdditionDto AdditionToSend = new();
+    private CustomValidation? customValidation;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        if (Addition is not null)
+        {
+            AdditionToSend.Id = Addition.Id;
+            AdditionToSend.AdditionName = Addition.AdditionName;
+            AdditionToSend.Price = Addition.Price;
+            AdditionToSend.AdditionKind = Addition.AdditionKind;
+        }
+
+        AdditionToSend.AdditionKind = AdditionToSend.AdditionKind is null ? "Drink" : AdditionToSend.AdditionKind;
+    }
+
+    private IDictionary<string, List<string>> Validate()
+    {
+        var errors = new Dictionary<string, List<string>>();
+        ValidateAdditionName(errors);
+        ValidatePrice(errors);
+        return errors;
+    }
+
+    private void ValidateAdditionName(IDictionary<string, List<string>> errors)
+    {
+        if (string.IsNullOrEmpty(AdditionToSend.AdditionName))
+        {
+            errors.Add(nameof(AdditionToSend.AdditionName), new() { "Name cannot be empty" });
+            return;
+        }
+
+        if (AdditionToSend.AdditionName.Length < 3)
+        {
+            errors.Add(nameof(AdditionToSend.AdditionName), new() { "Name should contain at least 3 characters" });
+            return;
+        }
+    }
+
+    private void ValidatePrice(IDictionary<string, List<string>> errors)
+    {
+        if (AdditionToSend.Price < 0)
+        {
+            errors.Add(nameof(AdditionToSend.Price), new() { "Price cannot be negative" });
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        customValidation?.ClearErrors();
+        var errors = Validate();
+
+        if (errors.Any())
+        {
+            customValidation?.DisplayErrors(errors);
+            return;
+        }
+
+        await OnSend.InvokeAsync(AdditionToSend);
+    }
+}

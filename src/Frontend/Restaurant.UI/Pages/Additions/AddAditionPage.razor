@@ -1,0 +1,14 @@
+﻿@page "/additions/add"
+
+@using Restaurant.UI.Components.Additions
+@using Restaurant.UI.DTO;
+<h3>AddAditionPage</h3>
+
+<AdditionFormComponent OnSend="Send" />
+
+@code {
+    private void Send(AdditionDto additionDto)
+    {
+
+    }
+}
