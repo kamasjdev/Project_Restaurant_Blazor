@@ -1,0 +1,30 @@
+﻿@using System.Linq.Expressions;
+
+@inherits InputBase<string>
+
+<div class="form-group">
+    @if (!string.IsNullOrWhiteSpace(Label))
+    {
+        <label class="d-flex" for="@Id">@Label</label>
+    }
+    <input class="form-control @(!string.IsNullOrWhiteSpace(Error) ? "is-invalid" : "") @CssClass" id="@Id" @bind="@CurrentValue" />
+    @if (!string.IsNullOrWhiteSpace(Error))
+    {
+        <div class="invalid-feedback d-flex text-start">
+            @Error
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string? Id { get; set; } = Guid.NewGuid().ToString("N");
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? Error { get; set; }
+
+    protected override bool TryParseValueFromString(string? value, out string result, out string validationErrorMessage)
+    {
+        result = string.IsNullOrWhiteSpace(value) ? "" : value;
+        validationErrorMessage = "";
+        return true;
+    }
+}

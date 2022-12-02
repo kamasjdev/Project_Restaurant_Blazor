@@ -1,32 +1,20 @@
-﻿@using Restaurant.UI.Components.Validations;
+﻿@using Restaurant.UI.Components.Inputs
+@using Restaurant.UI.Components.Validations;
 @using Restaurant.UI.DTO;
 
-<EditForm Model="@AdditionToSend" OnValidSubmit="@HandleValidSubmit">
-    <CustomValidation @ref="customValidation" />
-    <ValidationSummary />
+<EditForm Model="@FormToSend" OnValidSubmit="@HandleValidSubmit">
     <div>
-        <div>
-            <label class="d-flex">
-                Name
-            </label>
-            <InputText @bind-Value="AdditionToSend.AdditionName" class="form-control" />
+        <div class="mb-2">
+            <InputTextFormComponent Label="Name" Value="@FormToSend.AdditionName.Value" ValueChanged="(v) => ValidateAdditionName(v)" ValueExpression="@(() => FormToSend.AdditionName.Value)" Error="@FormToSend.AdditionName.Error" />
         </div>
-        <div class="mt-2">
-            <label class="d-flex">
-                Price
-            </label>
-            <InputNumber @bind-Value="AdditionToSend.Price" class="form-control" />
+        <div class="mb-2">
+            <InputNumberFormComponent Label="Price" Value="@FormToSend.Price.Value" ValueChanged="(v) => ValidatePrice(v)" ValueExpression="@(() => FormToSend.Price.Value)" Error="@FormToSend.Price.Error" Step="0.01" />
         </div>
-        <div class="mt-2">
-            <label class="d-flex">
-                Kind
-            </label>
-            <InputSelect @bind-Value="AdditionToSend.AdditionKind" class="form-control">
-                <option value="Drink">Drink</option>
-                <option value="Salad">Salad</option>
-            </InputSelect>
+        <div class="mb-2">
+            <InputSelectFormComponent Label="Kind" Value="@FormToSend.AdditionKind.Value" TData="string" ValueChanged="(v) => ValidateAdditionKind(v)"
+                    Options="@(new Dictionary<string, string> { { "Drink", "Drink" }, { "Salad", "Salad" } })" />
         </div>
-    </div>
+    </div>                                                                                                                        
     <button class="btn btn-success mt-2">
         Send
     </button>
@@ -39,8 +27,52 @@
     [Parameter]
     public EventCallback<AdditionDto> OnSend { get; set; }
 
-    private AdditionDto AdditionToSend = new();
-    private CustomValidation? customValidation;
+    private class Form
+    {
+        public Guid Id { get; set; }
+        public FormProperty<string?> AdditionName { get; set; } = new FormProperty<string?>
+        {
+            Rules = new List<Func<string?, string>>
+            {
+                (s) => string.IsNullOrWhiteSpace(s) ? "Name cannot be empty" : "",
+                (s) => s?.Length < 3 ? "Name should contain at least 3 characters" : ""
+            }
+        };
+
+        public FormProperty<decimal> Price { get; set; } = new FormProperty<decimal>()
+        {
+            Rules = new List<Func<decimal, string>>
+            {
+                (p) => p < 0 ? "Price cannot be negative" : ""
+            }
+        };
+
+        public FormProperty<string?> AdditionKind { get; set; } = new FormProperty<string?>()
+        {
+            Rules = new List<Func<string?, string>>
+            {
+                (s) => string.IsNullOrWhiteSpace(s) ? "Kind cannot be empty" : "",
+            }
+        };
+
+        public void ClearErrors()
+        {
+            AdditionName.Error = "";
+            Price.Error = "";
+            AdditionKind.Error = "";
+        }
+
+        public bool Validate()
+        {
+            var isValid = true;
+            isValid = AdditionName.IsValid() ? isValid : false;
+            isValid = Price.IsValid() ? isValid : false;
+            isValid = AdditionKind.IsValid() ? isValid : false;
+            return isValid;
+        }
+    }
+
+    private Form FormToSend = new();
 
     protected override void OnInitialized()
     {
@@ -48,57 +80,51 @@
 
         if (Addition is not null)
         {
-            AdditionToSend.Id = Addition.Id;
-            AdditionToSend.AdditionName = Addition.AdditionName;
-            AdditionToSend.Price = Addition.Price;
-            AdditionToSend.AdditionKind = Addition.AdditionKind;
-        }
-
-        AdditionToSend.AdditionKind = AdditionToSend.AdditionKind is null ? "Drink" : AdditionToSend.AdditionKind;
-    }
-
-    private IDictionary<string, List<string>> Validate()
-    {
-        var errors = new Dictionary<string, List<string>>();
-        ValidateAdditionName(errors);
-        ValidatePrice(errors);
-        return errors;
-    }
-
-    private void ValidateAdditionName(IDictionary<string, List<string>> errors)
-    {
-        if (string.IsNullOrEmpty(AdditionToSend.AdditionName))
-        {
-            errors.Add(nameof(AdditionToSend.AdditionName), new() { "Name cannot be empty" });
-            return;
-        }
-
-        if (AdditionToSend.AdditionName.Length < 3)
-        {
-            errors.Add(nameof(AdditionToSend.AdditionName), new() { "Name should contain at least 3 characters" });
-            return;
-        }
-    }
-
-    private void ValidatePrice(IDictionary<string, List<string>> errors)
-    {
-        if (AdditionToSend.Price < 0)
-        {
-            errors.Add(nameof(AdditionToSend.Price), new() { "Price cannot be negative" });
+            FormToSend.Id = Addition.Id;
+            FormToSend.AdditionName.Value = Addition.AdditionName;
+            FormToSend.Price.Value = Addition.Price;
+            FormToSend.AdditionKind.Value = Addition.AdditionKind;
         }
     }
 
     private async Task HandleValidSubmit()
     {
-        customValidation?.ClearErrors();
-        var errors = Validate();
+        FormToSend.ClearErrors();
+        var isValid = FormToSend.Validate();
 
-        if (errors.Any())
+        if (!isValid)
         {
-            customValidation?.DisplayErrors(errors);
             return;
         }
 
-        await OnSend.InvokeAsync(AdditionToSend);
+        await OnSend.InvokeAsync(new AdditionDto
+        {
+            AdditionName = FormToSend.AdditionName.Value,
+            Price = FormToSend.Price.Value,
+            AdditionKind = FormToSend.AdditionKind.Value
+        });
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+    }
+
+    private void ValidateAdditionName(string additionName)
+    {
+        FormToSend.AdditionName.Value = additionName;
+        FormToSend.AdditionName.IsValid();
+    }
+
+    private void ValidatePrice(decimal price)
+    {
+        FormToSend.Price.Value = price;
+        FormToSend.Price.IsValid();
+    }
+
+    private void ValidateAdditionKind(string additionKind)
+    {
+        FormToSend.AdditionKind.Value = additionKind;
+        FormToSend.AdditionKind.IsValid();
     }
 }

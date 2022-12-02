@@ -1,0 +1,31 @@
+﻿@using System.Linq.Expressions;
+
+@inherits InputBase<decimal>
+
+<div class="form-group">
+    @if (!string.IsNullOrWhiteSpace(Label))
+    {
+        <label class="d-flex" for="@Id">@Label</label>
+    }
+    <input class="form-control @(!string.IsNullOrWhiteSpace(Error) ? "is-invalid" : "") @CssClass" id="@Id" @bind="@CurrentValue" type="number" step="@Step" />
+    @if (!string.IsNullOrWhiteSpace(Error))
+    {
+        <div class="invalid-feedback d-flex text-start">
+            @Error
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string? Id { get; set; } = Guid.NewGuid().ToString("N");
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public string Step { get; set; } = "1";
+
+    protected override bool TryParseValueFromString(string value, out decimal result, out string validationErrorMessage)
+    {
+        var parsed = decimal.TryParse(value, out result);
+        validationErrorMessage = $"Cannot parse '{value}' to decimal";
+        return true;
+    }
+}

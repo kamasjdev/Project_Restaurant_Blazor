@@ -1,0 +1,66 @@
+﻿@typeparam TData
+
+<div>
+    @if (!string.IsNullOrWhiteSpace(Label))
+    {
+            <label class="d-flex" for="@Id">@Label</label>
+    }
+    <InputSelect @bind-Value="Value" class="form-control">
+        @foreach (var option in Options)
+        {
+            <option value="@option.Value">@option.Key</option>
+        }
+    </InputSelect>
+</div>
+
+@code {
+    [Parameter] 
+    public string? Id { get; set; } = Guid.NewGuid().ToString("N");
+
+    [Parameter]
+    public string? Label { get; set; }
+
+    [Parameter]
+    public TData? Value { get; set; }
+
+    [Parameter]
+    public EventCallback<TData> ValueChanged { get; set; }
+
+    [Parameter]
+    public IReadOnlyDictionary<string, TData> Options { get; set; } = new Dictionary<string, TData>();
+
+    private TData? previousValue;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        if (Value is null && Options is not null)
+        {
+            var data = Options.FirstOrDefault();
+            data.Equals(default(KeyValuePair<string, TData>));
+            if (!data.Equals(default(KeyValuePair<string, TData>)))
+            {
+                Value = data.Value;
+                await ValueChanged.InvokeAsync(Value);
+            }
+
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        await DetectChangesAsync(Value);
+    }
+
+    private async Task DetectChangesAsync(TData? currentValue)
+    {
+        if (previousValue is not null && previousValue.Equals(currentValue))
+        {
+            return;
+        }
+
+        previousValue = currentValue;
+        await ValueChanged.InvokeAsync(Value);
+    }
+}
