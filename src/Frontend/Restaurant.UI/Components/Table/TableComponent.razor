@@ -54,7 +54,7 @@ else
         columns.Add(column);
     }
 
-    private bool IsColumsChanged()
+    private bool AreColumsChanged()
     {
         var previousColumnsSize = columnsSize;
         columnsSize = columns.Count;
@@ -63,7 +63,7 @@ else
 
     protected override void OnAfterRender(bool firstRender)
     {
-        if (IsColumsChanged())
+        if (AreColumsChanged())
         {
             StateHasChanged();
         }
