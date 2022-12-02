@@ -2,13 +2,18 @@
 
 @using Restaurant.UI.Components.Additions
 @using Restaurant.UI.DTO;
+@using Restaurant.UI.Services.Abstractions;
+@inject NavigationManager NavigationManager;
+@inject IAdditionService AdditionService;
+
 <h3>AddAditionPage</h3>
 
 <AdditionFormComponent OnSend="Send" />
 
 @code {
-    private void Send(AdditionDto additionDto)
+    private async Task Send(AdditionDto additionDto)
     {
-
+        await AdditionService.AddAsync(additionDto);
+        NavigationManager.NavigateTo("/additions");
     }
 }
