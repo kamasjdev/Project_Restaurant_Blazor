@@ -2,39 +2,32 @@
 @using Restaurant.UI.Components.LoadingIcon
 @typeparam TRowData
 
-@if (Items is null)
-{
-    <LoadingIconComponent />
-}
-else
-{
-    <CascadingValue IsFixed="true" Value="this">@ChildContent</CascadingValue>
-    <table class="table">
-        <thead>
-            <tr>
-                @foreach (var column in columns)
-                {
-                    @column.HeaderTemplate
-                }
-            </tr>
-        </thead>
-        <tbody>
-            @if (Items is not null)
+<CascadingValue IsFixed="true" Value="this">@ChildContent</CascadingValue>
+<table class="table">
+    <thead>
+        <tr>
+            @foreach (var column in columns)
             {
-                var index = 0;
-                foreach (var item in Items)
-                {
-                    <tr @key="item.GetHashCode()" class="@(RowClass?.Invoke(item, index++))">
-                        @foreach (var column in columns)
-                        {
-                            @column.CellTemplate(item)
-                        }
-                    </tr>
-                }
+                @column.HeaderTemplate
             }
-        </tbody>
-    </table>
-}
+        </tr>
+    </thead>
+    <tbody>
+        @if (Items is not null)
+        {
+            var index = 0;
+            foreach (var item in Items)
+            {
+                <tr @key="item.GetHashCode()" class="@(RowClass?.Invoke(item, index++))">
+                    @foreach (var column in columns)
+                    {
+                        @column.CellTemplate(item)
+                    }
+                </tr>
+            }
+        }
+    </tbody>
+</table>
 
 @code {
     [Parameter]
