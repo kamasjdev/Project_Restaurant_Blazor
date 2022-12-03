@@ -1,0 +1,53 @@
+﻿@page "/additions/edit/{id:guid}"
+@using Restaurant.UI.Components.Additions
+@using Restaurant.UI.Components.Errors
+@using Restaurant.UI.Components.LoadingIcon
+@using Restaurant.UI.Components.NavigationButton
+@using Restaurant.UI.DTO;
+@using Restaurant.UI.Services.Abstractions;
+@inject NavigationManager NavigationManager;
+@inject IAdditionService AdditionService;
+
+<h3>EditAdditionPage</h3>
+
+@if (Loading)
+{
+    <LoadingIconComponent />
+}
+else
+{
+    if (Addition is null)
+    {
+        <div class="mt-2">
+            <ErrorComponent Text="@($"Addition with id '{Id}' was not found")" />
+        </div>
+        <div class="mt-2">
+            <NavigationButtonComponent Url="/additions" Text="Back to Additions" />
+        </div>
+    }
+    else
+    {
+        <AdditionFormComponent Addition="Addition" OnSend="Send" OnCancelClickButton='() => NavigationManager.NavigateTo("/additions")' />
+    }
+}
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+    public AdditionDto? Addition { get; set; }
+    public bool Loading { get; set; } = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        Addition = await AdditionService.GetAsync(Id);
+        await Task.Delay(1000);
+        Loading = false;
+    }
+
+    private async Task Send(AdditionDto additionDto)
+    {
+        await AdditionService.AddAsync(additionDto);
+        NavigationManager.NavigateTo("/additions");
+    }
+}

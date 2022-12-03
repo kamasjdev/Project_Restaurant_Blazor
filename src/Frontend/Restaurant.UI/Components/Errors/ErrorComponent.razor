@@ -1,6 +1,6 @@
 ﻿@if (!string.IsNullOrWhiteSpace(Text))
 {
-    <div class="alert alert-danger @CssClass">
+    <div class="alert alert-danger">
         @Text
     </div>
 }
@@ -8,7 +8,4 @@
 @code {
     [Parameter]
     public string Text { get; set; } = "";
-
-    [Parameter]
-    public string CssClass { get; set; } = "";
 }
