@@ -65,7 +65,7 @@
                 if (compiledExpression != null)
                 {
                     var value = compiledExpression(rowData);
-                    var formattedValue = string.IsNullOrEmpty(Format) ? value?.ToString() : string.Format("{0:" + Format + "}", value);
+                    var formattedValue = string.IsNullOrEmpty(Format) ? value?.ToString() : string.Format(Format, value);
                     builder.AddContent(1, formattedValue);
                 }
                 else

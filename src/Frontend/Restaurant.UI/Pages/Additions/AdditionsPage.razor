@@ -22,7 +22,7 @@ else
     <TableComponent Items="additions">
         <DataColumn TRowData="AdditionDto" Title="Id" Expression="a => a.Id" />
         <DataColumn TRowData="AdditionDto" Title="Name" Expression="a => a.AdditionName" />
-        <DataColumn TRowData="AdditionDto" Title="Price" Expression="a => a.Price" />
+        <DataColumn TRowData="AdditionDto" Title="Price" Expression="a => a.Price" Format="{0:0.00}" />
         <DataColumn TRowData="AdditionDto" Title="Kind" Expression="a => a.AdditionKind" />
         <DataColumn TRowData="AdditionDto" Title="Action">
             <button class="btn btn-primary me-2">

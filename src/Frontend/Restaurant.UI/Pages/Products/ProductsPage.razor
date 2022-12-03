@@ -21,7 +21,7 @@ else
     <TableComponent Items="products">
         <DataColumn TRowData="ProductDto" Title="Id" Expression="p => p.Id" />
         <DataColumn TRowData="ProductDto" Title="Name" Expression="p => p.ProductName" />
-        <DataColumn TRowData="ProductDto" Title="Price" Expression="p => p.Price" />
+        <DataColumn TRowData="ProductDto" Title="Price" Expression="p => p.Price" Format="{0:0.00}" />
         <DataColumn TRowData="ProductDto" Title="Kind" Expression="p => p.ProductKind" />
         <DataColumn TRowData="ProductDto" Title="Action">
             <button class="btn btn-primary me-2">
