@@ -12,12 +12,17 @@
         </div>
         <div class="mb-2">
             <InputSelectFormComponent Label="Kind" Value="@FormToSend.AdditionKind.Value" TData="string" ValueChanged="(v) => ValidateAdditionKind(v)"
-                    Options="@(new Dictionary<string, string> { { "Drink", "Drink" }, { "Salad", "Salad" } })" />
+                    Options="@(new Dictionary<string, string> { { "Soup", "Soup" }, { "Salad", "Salad" } })" />
         </div>
-    </div>                                                                                                                        
-    <button class="btn btn-success mt-2">
-        Send
-    </button>
+    </div>
+    <div class="mt-2">
+        <button class="btn btn-success me-2">
+            Send
+        </button>
+        <button class="btn btn-secondary" @onclick="() => OnCancelClickButton?.Invoke()">
+            Cancel
+        </button>
+    </div>
 </EditForm>
 
 @code {
@@ -26,6 +31,9 @@
 
     [Parameter]
     public EventCallback<AdditionDto> OnSend { get; set; }
+
+    [Parameter]
+    public Action? OnCancelClickButton { get; set; }
 
     private class Form
     {
