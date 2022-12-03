@@ -1,17 +1,21 @@
 ﻿@using Restaurant.UI.Components.Inputs
 @using Restaurant.UI.DTO;
+@using System.Linq.Expressions;
 
-<EditForm Model="@FormToSend" OnValidSubmit="@HandleValidSubmit">
+<EditForm Model="@Product" OnValidSubmit="@HandleValidSubmit">
+    <FluentValidationValidator @ref="_fluentValidationValidator" />
+
     <div>
         <div class="mb-2">
-            <InputTextFormComponent Label="Name" Value="@FormToSend.ProductName" />
+            <InputTextFormComponent Label="Name" @bind-Value="@Product.ProductName" Error="@(GetValidationMessage(context, () => Product.ProductName))" />
         </div>
         <div class="mb-2">
-            <InputNumberFormComponent Label="Price" Value="@FormToSend.Price" Step="0.01" />
+            <InputNumberFormComponent Label="Price" @bind-Value="@Product.Price" Step="0.01" Error="@(GetValidationMessage(context, () => Product.Price))" />
         </div>
         <div class="mb-2">
-            <InputSelectFormComponent Label="Kind" Value="@FormToSend.ProductKind" TData="string"
+            <InputSelectFormComponent Label="Kind" @bind-Value="@Product.ProductKind" TData="string"
                     Options="@(new Dictionary<string, string> { { "Pizza", "Pizza" } , { "MainDish", "MainDish" } , { "Soup", "Soup" } })" />
+            <ValidationMessage For="@(() => Product.ProductKind)" />
         </div>
     </div>
     <div class="mt-2">
@@ -26,7 +30,7 @@
 
 @code {
     [Parameter]
-    public ProductDto? Product { get; set; }
+    public ProductDto Product { get; set; } = new();
 
     [Parameter]
     public EventCallback<ProductDto> OnSend { get; set; }
@@ -34,23 +38,21 @@
     [Parameter]
     public Action? OnCancelClickButton { get; set; }
 
-    private Form FormToSend = new();
+    private FluentValidationValidator? _fluentValidationValidator;
 
-    private class Form
+    private string GetValidationMessage(EditContext editContext, Expression<Func<object>> field)
     {
-        public Guid Id { get; set; }
-        public string? ProductName { get; set; }
-        public decimal Price { get; set; }
-        public string? ProductKind { get; set; }
+        var validationMessage = editContext.GetValidationMessages(field).FirstOrDefault();
+        return validationMessage ?? "";
     }
 
     private async Task HandleValidSubmit()
     {
-        await OnSend.InvokeAsync(new ProductDto
+        if (!_fluentValidationValidator!.Validate(opt => opt.IncludeAllRuleSets()))
         {
-            ProductName = FormToSend.ProductName,
-            Price = FormToSend.Price,
-            ProductKind = FormToSend.ProductKind
-        });
+            return;
+        }
+
+        await OnSend.InvokeAsync(Product);
     }
 }
