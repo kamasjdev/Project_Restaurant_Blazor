@@ -7,10 +7,10 @@ namespace Restaurant.UI.Services.Implementation
     {
 		private readonly List<AdditionDto> _additions = new()
 		{
-			new AdditionDto { Id = Guid.NewGuid(), AdditionName = "Addition#1", Price= 100M, AdditionKind = "Soup" },
-			new AdditionDto { Id = Guid.NewGuid(), AdditionName = "Addition#2", Price= 50M, AdditionKind = "Soup" },
+			new AdditionDto { Id = Guid.NewGuid(), AdditionName = "Addition#1", Price= 100M, AdditionKind = "Drink" },
+			new AdditionDto { Id = Guid.NewGuid(), AdditionName = "Addition#2", Price= 50M, AdditionKind = "Drink" },
 			new AdditionDto { Id = Guid.NewGuid(), AdditionName = "Addition#3", Price= 20M, AdditionKind = "Salad" },
-			new AdditionDto { Id = Guid.NewGuid(), AdditionName = "Addition#4", Price= 150M, AdditionKind = "Soup" },
+			new AdditionDto { Id = Guid.NewGuid(), AdditionName = "Addition#4", Price= 150M, AdditionKind = "Drink" },
 			new AdditionDto { Id = Guid.NewGuid(), AdditionName = "Addition#5", Price= 25M, AdditionKind = "Salad" },
 		};
 

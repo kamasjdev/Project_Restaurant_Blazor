@@ -1,0 +1,56 @@
+﻿@using Restaurant.UI.Components.Inputs
+@using Restaurant.UI.DTO;
+
+<EditForm Model="@FormToSend" OnValidSubmit="@HandleValidSubmit">
+    <div>
+        <div class="mb-2">
+            <InputTextFormComponent Label="Name" Value="@FormToSend.ProductName" />
+        </div>
+        <div class="mb-2">
+            <InputNumberFormComponent Label="Price" Value="@FormToSend.Price" Step="0.01" />
+        </div>
+        <div class="mb-2">
+            <InputSelectFormComponent Label="Kind" Value="@FormToSend.ProductKind" TData="string"
+                    Options="@(new Dictionary<string, string> { { "Pizza", "Pizza" } , { "MainDish", "MainDish" } , { "Soup", "Soup" } })" />
+        </div>
+    </div>
+    <div class="mt-2">
+        <button class="btn btn-success me-2">
+            Send
+        </button>
+        <button class="btn btn-secondary" @onclick="() => OnCancelClickButton?.Invoke()">
+            Cancel
+        </button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public ProductDto? Product { get; set; }
+
+    [Parameter]
+    public EventCallback<ProductDto> OnSend { get; set; }
+
+    [Parameter]
+    public Action? OnCancelClickButton { get; set; }
+
+    private Form FormToSend = new();
+
+    private class Form
+    {
+        public Guid Id { get; set; }
+        public string? ProductName { get; set; }
+        public decimal Price { get; set; }
+        public string? ProductKind { get; set; }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await OnSend.InvokeAsync(new ProductDto
+        {
+            ProductName = FormToSend.ProductName,
+            Price = FormToSend.Price,
+            ProductKind = FormToSend.ProductKind
+        });
+    }
+}
