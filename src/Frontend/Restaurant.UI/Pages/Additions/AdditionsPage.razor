@@ -1,4 +1,5 @@
 ﻿@page "/additions"
+@using Restaurant.UI.Components.Modal
 @using Restaurant.UI.Components.Table
 @using Restaurant.UI.DTO;
 @using Restaurant.UI.Services.Abstractions;
@@ -22,14 +23,34 @@
         <button class="btn btn-warning me-2" @onclick='() => NavigationManager.NavigateTo($"/additions/edit/{context.Id}")'>
             Edit
         </button>
-        <button class="btn btn-danger">
+        <button class="btn btn-danger" @onclick="OpenModal">
             Delete
         </button>
     </DataColumn>
 </TableComponent>
 
+@if (IsModalOpen)
+{
+    <ModalComponent Title="New Title" OnClose="CloseModal">
+        <Body>
+            This is text test
+            <p>Next text</p>
+            <div>
+                Abc
+            </div>
+        </Body>
+        <Footer>
+            <button class="btn btn-primary">
+                Test
+            </button>
+        </Footer>
+    </ModalComponent>
+}
+
 @code {
     private ICollection<AdditionDto>? additions;
+
+    private bool IsModalOpen { get; set; } = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -37,5 +58,15 @@
         additions = new List<AdditionDto>(await AdditionService.GetAllAsync());
         await base.OnInitializedAsync();
         return;
+    }
+
+    private void OpenModal()
+    {
+        IsModalOpen = true;
+    }
+
+    private void CloseModal()
+    {
+        IsModalOpen = false;
     }
 }
