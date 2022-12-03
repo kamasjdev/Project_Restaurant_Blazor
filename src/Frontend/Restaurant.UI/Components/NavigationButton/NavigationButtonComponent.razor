@@ -1,0 +1,26 @@
+﻿@inject NavigationManager NavigationManager;
+
+<button type="button" class="@CssClass" @onclick="() => NavigationManager.NavigateTo(Url)">
+    @Text
+</button>
+
+@code {
+    [Parameter]
+    public string Url { get; set; } = "";
+
+    [Parameter]
+    public string CssClass { get; set; } = "btn btn-primary";
+
+    [Parameter]
+    public string Text { get; set; } = "";
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        if (string.IsNullOrWhiteSpace(Url))
+        {
+            throw new ArgumentException("Invalid Url");
+        }
+    }
+}
