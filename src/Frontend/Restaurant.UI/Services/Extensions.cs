@@ -8,6 +8,7 @@ namespace Restaurant.UI.Services
 		public static IServiceCollection AddServices(this IServiceCollection services)
 		{
 			services.AddSingleton<IAdditionService, AdditionService>();
+			services.AddSingleton<IProductService, ProductService>();
 			return services;
 		}
 	}
