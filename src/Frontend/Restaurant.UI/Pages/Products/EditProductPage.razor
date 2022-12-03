@@ -1,0 +1,53 @@
+﻿@page "/products/edit/{id:guid}"
+@using Restaurant.UI.Components.Errors
+@using Restaurant.UI.Components.LoadingIcon
+@using Restaurant.UI.Components.NavigationButton
+@using Restaurant.UI.Components.Products
+@using Restaurant.UI.DTO;
+@using Restaurant.UI.Services.Abstractions;
+@inject NavigationManager NavigationManager;
+@inject IProductService ProductService;
+
+<h3>EditProductPage</h3>
+
+@if (Loading)
+{
+    <LoadingIconComponent />
+}
+else
+{
+    if (Product is null)
+    {
+        <div class="mt-2">
+            <ErrorComponent Text="@($"Product with id '{Id}' was not found")" />
+        </div>
+        <div class="mt-2">
+            <NavigationButtonComponent Url="/products" Text="Back to Products" />
+        </div>
+    }
+    else
+    {
+        <ProductFormComponent Product="Product" OnSend="Send" OnCancelClickButton='() => NavigationManager.NavigateTo("/additions")' />
+    }
+}
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+    public ProductDto? Product { get; set; }
+    private bool Loading { get; set; } = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        Product = await ProductService.GetAsync(Id);
+        await Task.Delay(1000);
+        Loading = false;
+    }
+
+    private async Task Send(ProductDto productDto)
+    {
+        await ProductService.UpdateAsync(productDto);
+        NavigationManager.NavigateTo("/products");
+    }
+}

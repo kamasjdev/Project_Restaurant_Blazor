@@ -47,7 +47,11 @@ else
 
     private async Task Send(AdditionDto additionDto)
     {
-        await AdditionService.AddAsync(additionDto);
+        var addition = await AdditionService.GetAsync(Id);
+        addition!.AdditionName = additionDto.AdditionName;
+        addition!.Price = additionDto.Price;
+        addition!.AdditionKind = additionDto.AdditionKind;
+        await AdditionService.UpdateAsync(additionDto);
         NavigationManager.NavigateTo("/additions");
     }
 }
