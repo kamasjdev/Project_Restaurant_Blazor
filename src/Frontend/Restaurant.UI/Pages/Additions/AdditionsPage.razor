@@ -25,7 +25,7 @@ else
         <DataColumn TRowData="AdditionDto" Title="Price" Expression="a => a.Price" Format="{0:0.00}" />
         <DataColumn TRowData="AdditionDto" Title="Kind" Expression="a => a.AdditionKind" />
         <DataColumn TRowData="AdditionDto" Title="Action">
-            <button class="btn btn-primary me-2">
+            <button class="btn btn-primary me-2" @onclick='() => NavigationManager.NavigateTo($"/additions/view/{context.Id}")'>
                 Details
             </button>
             <button class="btn btn-warning me-2" @onclick='() => NavigationManager.NavigateTo($"/additions/edit/{context.Id}")'>

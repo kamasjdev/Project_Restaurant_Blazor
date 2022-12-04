@@ -1,0 +1,19 @@
+﻿@using Restaurant.UI.DTO;
+
+@if (Addition is not null)
+{
+    <div class="card" style="width: 18rem;">
+        <div class="card-body">
+            <h5 class="card-title">@Addition.AdditionName</h5>
+            <h6 class="card-subtitle mb-2 text-muted">@Addition.AdditionKind</h6>
+            <div class="d-flex justify-content-end">
+                <h6>@Addition.Price.ToString("0.00")</h6>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public AdditionDto? Addition { get; set; }
+}

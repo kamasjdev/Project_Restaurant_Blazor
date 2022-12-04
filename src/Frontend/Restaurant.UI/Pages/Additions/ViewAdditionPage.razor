@@ -1,0 +1,50 @@
+﻿@page "/additions/view/{id:guid}"
+@using Restaurant.UI.Components.Additions
+@using Restaurant.UI.Components.Errors
+@using Restaurant.UI.Components.LoadingIcon
+@using Restaurant.UI.Components.NavigationButton
+@using Restaurant.UI.DTO;
+@using Restaurant.UI.Services.Abstractions;
+@inject IAdditionService AdditionService;
+
+<h3>ViewAdditionComponent</h3>
+
+@if (Loading)
+{
+    <LoadingIconComponent />
+}
+else
+{
+    @if (Addition is null)
+    {
+        <div class="mt-2">
+            <ErrorComponent Text="@($"Addition with id: '{Id}' was not found")" />
+        </div>
+    }
+    else
+    {
+        <div class="mt-2">
+            <AdditionViewComponent Addition="Addition" />
+        </div>
+    }
+    <div class="mt-2">
+        <NavigationButtonComponent Url="/additions" Text="Back to Additions" />
+    </div>
+}
+
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private bool Loading { get; set; } = true;
+
+    private AdditionDto? Addition;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        Addition = await AdditionService.GetAsync(Id);
+        Loading = false;
+    }
+}

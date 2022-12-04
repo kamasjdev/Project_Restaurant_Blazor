@@ -20,7 +20,8 @@ namespace Restaurant.Infrastructure.Database
                 return _dbTransaction;
             }
 
-            return await _dbConnection.BeginTransactionAsync();
+            _dbTransaction = await _dbConnection.BeginTransactionAsync();
+            return _dbTransaction;
         }
         
         public DbTransaction BeginTransaction()
