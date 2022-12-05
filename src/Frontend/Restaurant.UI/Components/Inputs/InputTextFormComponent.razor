@@ -7,7 +7,12 @@
     {
         <label class="d-flex" for="@Id">@Label</label>
     }
-    <input class="form-control @(!string.IsNullOrWhiteSpace(Error) ? "is-invalid" : "") @CssClass" id="@Id" @bind="@CurrentValue" />
+    <input type="@(Type switch {
+            InputTextFormType.Text => "text",
+            InputTextFormType.Password => "password",
+            InputTextFormType.Email => "email",
+            _ => "text"
+        })" class="form-control @(!string.IsNullOrWhiteSpace(Error) ? "is-invalid" : "") @CssClass" id="@Id" @bind="@CurrentValue" />
     @if (!string.IsNullOrWhiteSpace(Error))
     {
         <div class="invalid-feedback d-flex text-start">
@@ -20,6 +25,7 @@
     [Parameter] public string? Id { get; set; } = Guid.NewGuid().ToString("N");
     [Parameter] public string? Label { get; set; }
     [Parameter] public string? Error { get; set; }
+    [Parameter] public InputTextFormType Type { get; set; } = InputTextFormType.Text;
 
     protected override bool TryParseValueFromString(string? value, out string result, out string validationErrorMessage)
     {
