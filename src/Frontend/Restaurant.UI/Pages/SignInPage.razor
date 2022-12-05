@@ -1,0 +1,61 @@
+﻿@page "/sign-in"
+@attribute [AllowAnonymous]
+@using Restaurant.UI.Components.Inputs;
+@using System.ComponentModel.DataAnnotations;
+@using System.Linq.Expressions;
+@using Restaurant.UI.Components.NavigationButton
+@using Restaurant.UI.Services.Abstractions;
+@inject IAuthenticationService AuthenticationService;
+@inject NavigationManager NavigationManager;
+
+<h3>SignInPage</h3>
+
+<EditForm EditContext="@editContext" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+
+    <InputTextFormComponent Label="Email" Type="InputTextFormType.Email" @bind-Value="Form.Email" Error="@(GetValidationMessage(context, () => Form.Email))" />
+    <InputTextFormComponent Label="Password" Type="InputTextFormType.Password" @bind-Value="Form.Password" Error="@(GetValidationMessage(context, () => Form.Password))" />
+    <div class="mt-2">
+        <button class="btn btn-success" type="submit">Login</button>
+        <NavigationButtonComponent Text="Cancel" Url="/" />
+    </div>
+</EditForm>
+
+
+@code {
+    public bool Loading { get; set; }
+    private SignInForm Form { get; set; } = new();
+    private EditContext? editContext;
+
+    private class SignInForm
+    {
+        [EmailAddress]
+        public string Email { get; set; }
+
+        [Required]
+        public string Password { get; set; }
+    }
+
+    protected override void OnInitialized()
+    {
+        editContext = new(Form);
+        base.OnInitialized();
+    }
+
+    private string GetValidationMessage(EditContext editContext, Expression<Func<object>> field)
+    {
+        var validationMessage = editContext.GetValidationMessages(field).FirstOrDefault();
+        return validationMessage ?? "";
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (!editContext.Validate())
+        {
+            return;
+        }
+
+        await AuthenticationService.SignInAsync(new DTO.SignInDto(Form.Email, Form.Password));
+        NavigationManager.NavigateTo("/");
+    }
+}

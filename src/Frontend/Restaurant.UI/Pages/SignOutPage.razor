@@ -1,0 +1,22 @@
+﻿@page "/sign-out"
+@using Restaurant.UI.Components
+@inject Restaurant.UI.Services.Abstractions.IAuthenticationService AuthorizationService;
+@inject NavigationManager NavigationManager;
+
+<AuthorizeView>
+    <Authorized Context="Auth">
+        <RedirectToComponent Path="/" />
+    </Authorized>
+</AuthorizeView>
+
+<h3>You've been logged out</h3>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await AuthorizationService.SignoutAsync();
+        await Task.Delay(2000);
+        NavigationManager.NavigateTo("/");
+    }
+}

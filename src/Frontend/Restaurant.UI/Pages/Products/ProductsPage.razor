@@ -4,6 +4,7 @@
 @using Restaurant.UI.Components.Table
 @using Restaurant.UI.DTO;
 @using Restaurant.UI.Services.Abstractions;
+@attribute [Authorize]
 @inject IProductService ProductService;
 @inject NavigationManager NavigationManager;
 
