@@ -1,5 +1,6 @@
 ﻿@page "/sign-in"
 @attribute [AllowAnonymous]
+@using Restaurant.UI.Components
 @using Restaurant.UI.Components.Errors
 @using Restaurant.UI.Components.Inputs;
 @using System.ComponentModel.DataAnnotations;
@@ -12,6 +13,12 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider;
 
 <h3>SignInPage</h3>
+
+<AuthorizeView>
+    <Authorized>
+        <RedirectToComponent Path="/" />
+    </Authorized>
+</AuthorizeView>
 
 <EditForm EditContext="@editContext" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />

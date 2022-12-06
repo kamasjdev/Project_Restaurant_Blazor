@@ -1,0 +1,13 @@
+﻿<AuthorizeView Roles="@Roles" Policy="@Policy">
+    <NotAuthorized>
+        <RedirectToComponent Path="/" />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [Parameter]
+    public string? Roles { get; set; }
+
+    [Parameter]
+    public string? Policy { get; set; }
+}

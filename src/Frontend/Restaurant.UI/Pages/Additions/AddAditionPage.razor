@@ -1,4 +1,5 @@
 ﻿@page "/additions/add"
+@using Restaurant.UI.Components
 @using Restaurant.UI.Components.Additions
 @using Restaurant.UI.DTO;
 @using Restaurant.UI.Services.Abstractions;
@@ -8,6 +9,7 @@
 <h3>AddAditionPage</h3>
 
 <AdditionFormComponent OnSend="Send" OnCancelClickButton='() => NavigationManager.NavigateTo("/additions")' />
+<AuthorizationComponent />
 
 @code {
     private async Task Send(AdditionDto additionDto)

@@ -1,4 +1,5 @@
 ﻿@page "/products/edit/{id:guid}"
+@using Restaurant.UI.Components
 @using Restaurant.UI.Components.Errors
 @using Restaurant.UI.Components.LoadingIcon
 @using Restaurant.UI.Components.NavigationButton
@@ -9,6 +10,8 @@
 @inject IProductService ProductService;
 
 <h3>EditProductPage</h3>
+
+<AuthorizationComponent />
 
 @if (Loading)
 {

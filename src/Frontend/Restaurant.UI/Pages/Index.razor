@@ -6,7 +6,7 @@
 
 <AuthorizeView>
     <Authorized Context="Auth">
-        Welcome @Auth.User.Claims.Where(c => c.Type == "email").SingleOrDefault()?.Value to Resturant app..
+        Welcome @Auth.User.Claims.Where(c => c.Type == "email").SingleOrDefault()?.Value to Resturant app.
     </Authorized>
     <NotAuthorized>
         Welcome to Resturant app.
