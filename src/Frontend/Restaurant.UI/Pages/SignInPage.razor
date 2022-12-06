@@ -1,12 +1,15 @@
 ﻿@page "/sign-in"
 @attribute [AllowAnonymous]
+@using Restaurant.UI.Components.Errors
 @using Restaurant.UI.Components.Inputs;
 @using System.ComponentModel.DataAnnotations;
 @using System.Linq.Expressions;
 @using Restaurant.UI.Components.NavigationButton
+@using Restaurant.UI.Security;
 @using Restaurant.UI.Services.Abstractions;
 @inject IAuthenticationService AuthenticationService;
 @inject NavigationManager NavigationManager;
+@inject AuthenticationStateProvider AuthenticationStateProvider;
 
 <h3>SignInPage</h3>
 
@@ -15,6 +18,12 @@
 
     <InputTextFormComponent Label="Email" Type="InputTextFormType.Email" @bind-Value="Form.Email" Error="@(GetValidationMessage(context, () => Form.Email))" />
     <InputTextFormComponent Label="Password" Type="InputTextFormType.Password" @bind-Value="Form.Password" Error="@(GetValidationMessage(context, () => Form.Password))" />
+    @if (Error is not null)
+    {
+        <div class="mt-2">
+            <ErrorComponent Text="@Error" />
+        </div>
+    }
     <div class="mt-2">
         <button class="btn btn-success" type="submit">Login</button>
         <NavigationButtonComponent Text="Cancel" Url="/" />
@@ -26,14 +35,15 @@
     public bool Loading { get; set; }
     private SignInForm Form { get; set; } = new();
     private EditContext? editContext;
+    private string? Error;
 
     private class SignInForm
     {
         [EmailAddress]
-        public string Email { get; set; }
+        public string Email { get; set; } = "";
 
         [Required]
-        public string Password { get; set; }
+        public string Password { get; set; } = "";
     }
 
     protected override void OnInitialized()
@@ -50,12 +60,19 @@
 
     private async Task HandleValidSubmit()
     {
+        if (editContext is null)
+        {
+            Error = "Something bad happen, please try again later";
+            return;
+        }
+
         if (!editContext.Validate())
         {
             return;
         }
 
-        await AuthenticationService.SignInAsync(new DTO.SignInDto(Form.Email, Form.Password));
+        var dto = await AuthenticationService.SignInAsync(new DTO.SignInDto(Form.Email, Form.Password));
+        await ((CustomAuthenticationStateProvider)AuthenticationStateProvider).UpdateAuthenticationStateAsync(dto);
         NavigationManager.NavigateTo("/");
     }
 }

@@ -1,4 +1,8 @@
-﻿@inherits LayoutComponentBase
+﻿@using Restaurant.UI.Components
+@using Restaurant.UI.Security;
+@inherits LayoutComponentBase
+@inject AuthenticationStateProvider AuthenticationStateProvider;
+@inject NavigationManager NavigationManager;
 
 <div class="page">
     <div class="sidebar">
@@ -8,6 +12,14 @@
     <main>
         <div class="top-row px-4">
             <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+            <AuthorizeView>
+                <Authorized>
+                    <a @onclick="Logout" href="javascript:void(0)">Logout</a>
+                </Authorized>
+                <NotAuthorized>
+                    <a href="/sign-in">Login</a>
+                </NotAuthorized>
+            </AuthorizeView>
         </div>
 
         <article class="content px-4">
@@ -15,3 +27,12 @@
         </article>
     </main>
 </div>
+
+@code {
+
+    private async Task Logout()
+    {
+        await ((CustomAuthenticationStateProvider)AuthenticationStateProvider).UpdateAuthenticationStateAsync(null);
+        NavigationManager.NavigateTo("/");
+    }
+}

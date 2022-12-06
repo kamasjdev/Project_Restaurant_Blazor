@@ -8,6 +8,8 @@ namespace Restaurant.UI.Security
     public class CustomAuthenticationStateProvider : AuthenticationStateProvider
     {
         private readonly ILocalStorageService _localStorage;
+        private readonly ClaimsPrincipal _annonymous = new ClaimsPrincipal(new ClaimsIdentity());
+        private const string AUTH = "JwTAuth";
 
         public CustomAuthenticationStateProvider(ILocalStorageService localStorage)
         {
@@ -20,12 +22,27 @@ namespace Restaurant.UI.Security
 
             if (token is null)
             {
-                return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+                return new AuthenticationState(_annonymous);
             }
 
             return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
                 { new Claim("id", token.Id.ToString()), new Claim("email", token.Email), new Claim("role", token.Role) }
-            )));
+            , authenticationType: AUTH))); // need to specify authenticate state, if not specified user will be annonymous
+        }
+
+        // method used for update state
+        public async Task UpdateAuthenticationStateAsync(UserDto? userDto)
+        {
+            if (userDto is null)
+            {
+                await _localStorage.RemoveItemAsync("token");
+                NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(_annonymous)));
+                return;
+            }
+
+            NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
+                { new Claim("id", userDto.Id.ToString()), new Claim("email", userDto.Email), new Claim("role", userDto.Role) }
+            , authenticationType: AUTH)))));
         }
     }
 }
