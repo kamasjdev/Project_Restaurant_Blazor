@@ -27,7 +27,7 @@ namespace Restaurant.UI.Security
 
             return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
                 { new Claim("id", token.Id.ToString()), new Claim("email", token.Email), new Claim("role", token.Role) }
-            , authenticationType: AUTH))); // need to specify authenticate state, if not specified user will be annonymous
+            , authenticationType: AUTH))); // need to specify authenticate type, if not specified user will be annonymous
         }
 
         // method used for update state

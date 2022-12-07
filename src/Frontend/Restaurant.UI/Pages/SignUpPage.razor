@@ -1,4 +1,4 @@
-﻿@page "/sign-in"
+﻿@page "/sign-up"
 @attribute [AllowAnonymous]
 @using Restaurant.UI.Components
 @using Restaurant.UI.Components.Errors
@@ -10,9 +10,8 @@
 @using Restaurant.UI.Services.Abstractions;
 @inject IAuthenticationService AuthenticationService;
 @inject NavigationManager NavigationManager;
-@inject AuthenticationStateProvider AuthenticationStateProvider;
 
-<h3>Login</h3>
+<h3>Register</h3>
 
 <AuthorizeView>
     <Authorized>
@@ -25,6 +24,7 @@
 
     <InputTextFormComponent Label="Email" Type="InputTextFormType.Email" @bind-Value="Form.Email" Error="@(GetValidationMessage(context, () => Form.Email))" />
     <InputTextFormComponent Label="Password" Type="InputTextFormType.Password" @bind-Value="Form.Password" Error="@(GetValidationMessage(context, () => Form.Password))" />
+    <InputTextFormComponent Label="Confirm Password" Type="InputTextFormType.Password" @bind-Value="Form.ConfirmPassword" Error="@(GetValidationMessage(context, () => Form.ConfirmPassword))" />
     @if (Error is not null)
     {
         <div class="mt-2">
@@ -32,13 +32,14 @@
         </div>
     }
     <div class="mt-2">
-        <button class="btn btn-success" type="submit">Login</button>
+        <button class="btn btn-success" type="submit">Register</button>
         <NavigationButtonComponent Text="Cancel" Url="/" />
     </div>
 </EditForm>
 
 
 @code {
+
     public bool Loading { get; set; }
     private SignInForm Form { get; set; } = new();
     private EditContext? editContext;
@@ -51,7 +52,13 @@
         public string Email { get; set; } = "";
 
         [Required]
+        [RegularExpression("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d\\w\\W]{8,}$", ErrorMessage = "Password should have at least 8 characters, including upper letter and number")]
         public string Password { get; set; } = "";
+
+        [Required]
+        [RegularExpression("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d\\w\\W]{8,}$", ErrorMessage = "Password should have at least 8 characters, including upper letter and number")]
+        [Compare(nameof(Password), ErrorMessage = "Passwords don't match")]
+        public string ConfirmPassword { get; set; } = "";
     }
 
     protected override void OnInitialized()
@@ -79,8 +86,7 @@
             return;
         }
 
-        var dto = await AuthenticationService.SignInAsync(new DTO.SignInDto(Form.Email, Form.Password));
-        await ((CustomAuthenticationStateProvider)AuthenticationStateProvider).UpdateAuthenticationStateAsync(dto);
+        await AuthenticationService.SignUpAsync(new DTO.SignUpDto(Form.Email, Form.Password));
         NavigationManager.NavigateTo("/");
     }
 }

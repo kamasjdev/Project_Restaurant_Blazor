@@ -9,7 +9,7 @@
 <h3>AddAditionPage</h3>
 
 <AdditionFormComponent OnSend="Send" OnCancelClickButton='() => NavigationManager.NavigateTo("/additions")' />
-<AuthorizationComponent />
+<AuthorizationComponent Roles="admin" />
 
 @code {
     private async Task Send(AdditionDto additionDto)

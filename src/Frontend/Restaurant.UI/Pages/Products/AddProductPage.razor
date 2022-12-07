@@ -9,7 +9,7 @@
 
 <h3>AddProductPage</h3>
 <ProductFormComponent OnSend="Send" OnCancelClickButton='() => NavigationManager.NavigateTo("/products")' />
-<AuthorizationComponent />
+<AuthorizationComponent Roles="admin" />
 
 @code {
     private async Task Send(ProductDto productDto)
