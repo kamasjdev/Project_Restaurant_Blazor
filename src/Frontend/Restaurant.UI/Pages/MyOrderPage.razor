@@ -1,8 +1,34 @@
 ﻿@page "/my-order"
+@using Restaurant.UI.Components.LoadingIcon
+@using Restaurant.UI.Components.Orders
+@using Restaurant.UI.DTO;
+@using Restaurant.UI.Services.Abstractions;
 @attribute [Authorize]
+@inject IProductService ProductService;
+@inject IAdditionService AdditionService;
 
-<!--TODO: AuthorizedView Only authorized users can order -->
-<h3>MyOrderPage</h3>
+<h3>Create Order</h3>
+
+@if (Loading)
+{
+    <LoadingIconComponent />
+}
+else
+{
+    <CreateOrderFormComponent Products="Products" Additions="Additions" />
+}
+
 @code {
+    private bool Loading { get; set; } = true;
+    private IEnumerable<ProductDto>? Products { get; set; }
+    private IEnumerable<AdditionDto>? Additions { get; set; }
 
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(1000);
+        Products = await ProductService.GetAllAsync();
+        Additions = await AdditionService.GetAllAsync();
+        await base.OnInitializedAsync();
+        Loading = false;
+    }
 }

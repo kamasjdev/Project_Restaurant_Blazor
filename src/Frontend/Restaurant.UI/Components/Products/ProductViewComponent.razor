@@ -2,7 +2,7 @@
 
 @if (Product is not null)
 {
-    <div class="card" style="width: 18rem;">
+    <div class="card @CssClass" style="width: 18rem;" @onclick="ClickCard">
         <div class="card-body">
             <h5 class="card-title">@Product.ProductName</h5>
             <h6 class="card-subtitle mb-2 text-muted">@Product.ProductKind</h6>
@@ -16,4 +16,15 @@
 @code {
     [Parameter]
     public ProductDto? Product { get; set; }
+
+    [Parameter]
+    public string? CssClass { get; set; } = "";
+
+    [Parameter]
+    public EventCallback<ProductDto> OnClick { get; set; }
+
+    private async Task ClickCard()
+    {
+        await OnClick.InvokeAsync(Product);
+    }
 }
