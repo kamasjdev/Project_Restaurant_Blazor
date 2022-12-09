@@ -1,0 +1,43 @@
+﻿@page "/orders/view/{Id:guid}"
+@using Restaurant.UI.Components.Errors
+@using Restaurant.UI.Components.LoadingIcon
+@using Restaurant.UI.Components.NavigationButton
+@using Restaurant.UI.Components.Orders
+@using Restaurant.UI.DTO;
+@using Restaurant.UI.Services.Abstractions;
+@attribute [Authorize]
+@inject IOrderService OrderService;
+
+<h3>OrderViewPage</h3>
+
+@if(_loading)
+{
+    <LoadingIconComponent />
+}
+else
+{
+    @if (_order is null)
+    {
+        <ErrorComponent Text="@($"Order with id {Id} was not found")" />
+    }
+    else
+    {
+        <OrderViewComponent Order="_order" />
+    }
+    <NavigationButtonComponent Text="Back to Orders" Url="/orders" />
+}
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private bool _loading = true;
+    private OrderDetailsDto? _order;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _order = await OrderService.GetAsync(Id);
+        await base.OnInitializedAsync();
+        _loading = false;
+    }
+}

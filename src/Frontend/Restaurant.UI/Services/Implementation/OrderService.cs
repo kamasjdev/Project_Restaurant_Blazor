@@ -75,6 +75,11 @@ namespace Restaurant.UI.Services.Implementation
             return _orders;
         }
 
+        public Task<IEnumerable<OrderDto>> GetAllByEmailAsync(string email)
+        {
+            return Task.FromResult(_orders.Where(o => o.Email == email));
+        }
+
         public Task<OrderDetailsDto?> GetAsync(Guid id)
         {
             return Task.FromResult((OrderDetailsDto?)_orders.SingleOrDefault(o => o.Id == id));

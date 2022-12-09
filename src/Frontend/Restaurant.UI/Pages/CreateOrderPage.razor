@@ -19,7 +19,7 @@
 }
 else
 {
-    <CreateOrderFormComponent Email="_email" Products="_products" Additions="_additions" ProductSales="_productsInCart" OnSend="AddOrder" />
+    <CreateOrderFormComponent Email="@_email" Products="@_products" Additions="@_additions" ProductSales="@_productsInCart" OnSend="AddOrder" />
 }
 
 @code {
@@ -45,6 +45,6 @@ else
     private async Task AddOrder(AddOrderDto addOrderDto)
     {
         await OrderService.AddAsync(addOrderDto);
-        NavigationManager.NavigateTo($"/orders/{addOrderDto.Id}");
+        NavigationManager.NavigateTo($"/orders/view/{addOrderDto.Id}");
     }
 }

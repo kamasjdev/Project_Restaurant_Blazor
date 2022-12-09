@@ -1,0 +1,10 @@
+﻿@page "/orders/edit/{Id:guid}"
+@using Restaurant.UI.Components
+
+<AuthorizationComponent Roles="admin" />
+<h3>OrderEditPage</h3>
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+}
