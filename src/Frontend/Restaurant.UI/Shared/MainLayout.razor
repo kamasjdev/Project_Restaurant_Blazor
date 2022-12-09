@@ -3,6 +3,7 @@
 @inherits LayoutComponentBase
 @inject AuthenticationStateProvider AuthenticationStateProvider;
 @inject NavigationManager NavigationManager;
+@inject IJSRuntime JsRuntime;
 
 <div class="page">
     <div class="sidebar">
@@ -22,18 +23,31 @@
             </AuthorizeView>
             <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
         </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
+        <ErrorBoundary>
+            <ChildContent>
+                <article class="content px-4">
+                    @Body
+                </article>
+            </ChildContent>
+            <ErrorContent Context="errorException">
+                <div class="alert alert-danger">
+                    @GetGenericErrorText(errorException)
+                </div>
+            </ErrorContent>
+        </ErrorBoundary>
     </main>
 </div>
 
 @code {
-
     private async Task Logout()
     {
         await ((CustomAuthenticationStateProvider)AuthenticationStateProvider).UpdateAuthenticationStateAsync(null);
         NavigationManager.NavigateTo("/");
+    }
+
+    private string GetGenericErrorText(Exception exception)
+    {
+        JsRuntime.InvokeVoidAsync("console.error", exception.Message, exception.StackTrace);
+        return "Something bad happen, try again later. If it still happen contact with support";
     }
 }
