@@ -6,29 +6,45 @@
 @attribute [Authorize]
 @inject IProductService ProductService;
 @inject IAdditionService AdditionService;
+@inject IProductSaleService ProductSaleService;
+@inject IOrderService OrderService;
+@inject AuthenticationStateProvider AuthenticationStateProvider;
+@inject NavigationManager NavigationManager;
 
 <h3>Create Order</h3>
 
-@if (Loading)
+@if (_loading)
 {
     <LoadingIconComponent />
 }
 else
 {
-    <CreateOrderFormComponent Products="Products" Additions="Additions" />
+    <CreateOrderFormComponent Email="_email" Products="_products" Additions="_additions" ProductSales="_productsInCart" OnSend="AddOrder" />
 }
 
 @code {
-    private bool Loading { get; set; } = true;
-    private IEnumerable<ProductDto>? Products { get; set; }
-    private IEnumerable<AdditionDto>? Additions { get; set; }
+    private bool _loading { get; set; } = true;
+    private IEnumerable<ProductDto>? _products { get; set; }
+    private IEnumerable<AdditionDto>? _additions { get; set; }
+    private IEnumerable<ProductSaleDto> _productsInCart { get; set; } = new List<ProductSaleDto>();
+    private string _email = "";
 
     protected override async Task OnInitializedAsync()
     {
-        await Task.Delay(1000);
-        Products = await ProductService.GetAllAsync();
-        Additions = await AdditionService.GetAllAsync();
+        _products = await ProductService.GetAllAsync();
+        _additions = await AdditionService.GetAllAsync();
+        _productsInCart = await ProductSaleService.GetAllInCartByEmailAsync(_email);
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        _email = authState?.User?.Claims?.SingleOrDefault(c => c.Type == "email")?.Value;
+        _productsInCart = await ProductSaleService.GetAllInCartByEmailAsync(_email);
         await base.OnInitializedAsync();
-        Loading = false;
+        await Task.Delay(1000);
+        _loading = false;
+    }
+
+    private async Task AddOrder(AddOrderDto addOrderDto)
+    {
+        await OrderService.AddAsync(addOrderDto);
+        NavigationManager.NavigateTo($"/orders/{addOrderDto.Id}");
     }
 }

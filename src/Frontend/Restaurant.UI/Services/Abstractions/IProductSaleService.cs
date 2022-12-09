@@ -6,5 +6,7 @@ namespace Restaurant.UI.Services.Abstractions
     {
         Task<Guid> AddAsync(ProductSaleDto productSaleDto);
         Task DeleteAsync(Guid id);
+        Task<ProductSaleDto?> GetAsync(Guid productSaleId);
+        Task<IEnumerable<ProductSaleDto>> GetAllInCartByEmailAsync(string email);
     }
 }

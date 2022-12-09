@@ -5,7 +5,6 @@
 @using Restaurant.UI.DTO;
 @using Restaurant.UI.Services.Abstractions;
 @inject IProductSaleService ProductSaleService;
-@inject AuthenticationStateProvider AuthenticationStateProvider;
 
 @if (!string.IsNullOrWhiteSpace(Errors))
 {
@@ -14,34 +13,37 @@
 }
 else
 {
+    <div class="info-text mb-2">
+        Products:
+    </div>
     <div class="item-list mb-2">
         @foreach (var product in Products)
         {
             <div class="me-2 mb-2">
-                <ProductViewComponent CssClass="@(ProductToAdd is not null && ProductToAdd.Id == product.Id ? "bg-info" : "")" Product="product" OnClick="() => ProductChoosed(product)" />
+                <ProductViewComponent CssClass="@(_productToAdd is not null && _productToAdd.Id == product.Id ? "bg-info" : "")" Product="product" OnClick="() => ProductChoosed(product)" />
             </div>
         }
+    </div>
+    <div class="info-text mb-2">
+        Additions:
     </div>
     <div class="item-list mb-2">
         @foreach(var addition in Additions)
         {
             <div class="me-2 mb-2">
-                <AdditionViewComponent CssClass="@(AdditionToAdd is not null && AdditionToAdd.Id == addition.Id ? "bg-info" : "")" Addition="addition" OnClick="() => AdditionChoosed(addition)" />
+                <AdditionViewComponent CssClass="@(_additionToAdd is not null && _additionToAdd.Id == addition.Id ? "bg-info" : "")" Addition="addition" OnClick="() => AdditionChoosed(addition)" />
             </div>
         }
     </div>
-    <div class="mb-4">
-        <button class="btn btn-success  @(ProductToAdd is not null ? "" : "disabled")" @onclick="() => AddProductSale()">
+    <div class="mb-2">
+        <button class="btn btn-success  @(_productToAdd is not null ? "" : "disabled")" @onclick="() => AddProductSale()">
             Add to Order
         </button>
     </div>
     <div>
         <div class="mb-2">
-            <button class="btn btn-danger @(ProductSaleToDelete == Guid.Empty ? "disabled" : "") me-2" @onclick="() => DeleteProductSale()">
+            <button class="btn btn-danger @(_productSaleToDelete == Guid.Empty ? "disabled" : "")" @onclick="() => DeleteProductSale()">
                 Delete
-            </button>
-            <button class="btn btn-primary @(!ProductSales.Any() ? "disabled" : "") " @onclick="() => CreateOrder()">
-                Create Order
             </button>
         </div>
         <table class="table table-striped table-hover table-bordered">
@@ -56,9 +58,9 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (var productSale in ProductSales)
+                @foreach (var productSale in _productSales)
                 {
-                    <tr @onclick="() => MarkToDelete(productSale)" class="@(ProductSaleToDelete == productSale.Id ? "bg-success" : "")">
+                    <tr @onclick="() => MarkToDelete(productSale)" class="@(_productSaleToDelete == productSale.Id ? "bg-success" : "")">
                         <td>
                             @productSale.Id
                         </td>
@@ -82,7 +84,7 @@ else
             </tbody>
         </table>
     </div>
-    <div class="text-start">
+    <div class="text-start w-25">
         <table class="table mt-2">
             <thead>
                 <tr>
@@ -91,28 +93,48 @@ else
             </thead>
             <tbody>
                 <tr>
-                    <td>@ProductSales.Sum(p => p.EndPrice).ToString("0.00")</td>
+                    <td>@_productSales.Sum(p => p.EndPrice).ToString("0.00")</td>
                 </tr>
             </tbody>
         </table>
     </div>
+    <div class="mt-2">
+        <div class="info-text">
+            Notes:
+        </div>
+        <textarea class="form-control text-area" @bind="@_note" maxlength="5000" />
+    </div>
+    <div class="mt-4 mb-2 text-center">
+        <button class="btn btn-primary @(!_productSales.Any() ? "disabled" : "")" @onclick="() => CreateOrder()">
+            Create Order
+        </button>
+    </div>
 }
 
 @code {
+    [Parameter]
+    public string Email { get; set; } = "";
+
     [Parameter]
     public IEnumerable<ProductDto> Products { get; set; } = new List<ProductDto>();
 
     [Parameter]
     public IEnumerable<AdditionDto> Additions { get; set; } = new List<AdditionDto>();
 
+    [Parameter]
+    public IEnumerable<ProductSaleDto> ProductSales { get; set; } = new List<ProductSaleDto>();
+    
+    [Parameter]
+    public EventCallback<AddOrderDto> OnSend { get; set; }
+
     public string? Errors { get; set; }
 
-    private ProductDto? ProductToAdd { get; set; }
-    private AdditionDto? AdditionToAdd { get; set; }
+    private ProductDto? _productToAdd { get; set; }
+    private AdditionDto? _additionToAdd { get; set; }
 
-    private List<ProductSaleDto> ProductSales { get; set; } = new();
-    private Guid ProductSaleToDelete = Guid.Empty;
-    private string Email { get; set; } = "";
+    private List<ProductSaleDto> _productSales { get; set; } = new();
+    private Guid _productSaleToDelete = Guid.Empty;
+    private string? _note { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -123,86 +145,82 @@ else
             Errors = "Products are required to complete Order form, please ensure that collection is not empty. ";
         }
 
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-
-        if (authState is null)
+        if (Email is null)
         {
-            Errors += "Please sign in";
-            return;
+            Errors += "Something bad happen, please try again later or contact with support ";
         }
 
-        Email = authState.User.Claims.SingleOrDefault(c => c.Type == "email")?.Value;
+        _productSales.AddRange(ProductSales);
     }
 
     private void ProductChoosed(ProductDto productDto)
     {
-        if (ProductToAdd is not null && ProductToAdd.Id == productDto.Id)
+        if (_productToAdd is not null && _productToAdd.Id == productDto.Id)
         {
-            ProductToAdd = null;
-            AdditionToAdd = null;
+            _productToAdd = null;
+            _additionToAdd = null;
             return;
         }
 
-        ProductToAdd = productDto;
+        _productToAdd = productDto;
     }
 
     private void AdditionChoosed(AdditionDto additionDto)
     {
-        if (AdditionToAdd is not null && AdditionToAdd.Id == additionDto.Id)
+        if (_additionToAdd is not null && _additionToAdd.Id == additionDto.Id)
         {
-            AdditionToAdd = null;
+            _additionToAdd = null;
             return;
         }
 
-        AdditionToAdd = additionDto;
+        _additionToAdd = additionDto;
     }
 
     private async Task AddProductSale()
     {
         var productSale = new ProductSaleDto
         {
-            Product = ProductToAdd,
+            Product = _productToAdd,
             Email = Email,
             ProductSaleState = "New",
-            Addition = AdditionToAdd,
-            EndPrice = AdditionToAdd is not null ? ProductToAdd.Price + AdditionToAdd.Price : ProductToAdd.Price
+            Addition = _additionToAdd,
+            EndPrice = _additionToAdd is not null ? _productToAdd.Price + _additionToAdd.Price : _productToAdd.Price
         };
         await ProductSaleService.AddAsync(productSale);
-        ProductSales.Add(productSale);
+        _productSales.Add(productSale);
     }
 
     private void MarkToDelete(ProductSaleDto productSaleDto)
     {
-        if (ProductSaleToDelete == productSaleDto.Id)
+        if (_productSaleToDelete == productSaleDto.Id)
         {
-            ProductSaleToDelete = Guid.Empty;
+            _productSaleToDelete = Guid.Empty;
             return;
         }
 
-        ProductSaleToDelete = productSaleDto.Id;
+        _productSaleToDelete = productSaleDto.Id;
     }
 
     private async Task DeleteProductSale()
     {
-        if (ProductSaleToDelete == Guid.Empty)
+        if (_productSaleToDelete == Guid.Empty)
         {
             return;
         }
 
-        await ProductSaleService.DeleteAsync(ProductSaleToDelete);
-        var productSale = ProductSales.SingleOrDefault(ps => ps.Id == ProductSaleToDelete);
+        await ProductSaleService.DeleteAsync(_productSaleToDelete);
+        var productSale = _productSales.SingleOrDefault(ps => ps.Id == _productSaleToDelete);
 
         if (productSale is not null)
         {
-            ProductSales.Remove(productSale);
+            _productSales.Remove(productSale);
         }
-        
-        ProductSaleToDelete = Guid.Empty;
+
+        _productSaleToDelete = Guid.Empty;
     }
 
     private async Task CreateOrder()
     {
-        // TODO Handle Creation
-        // Think how it should behave when someone has something in cart?
+        await OnSend.InvokeAsync(new AddOrderDto { Email = Email, ProductSaleIds = _productSales.Select(ps => ps.Id), Note = _note });
     }
 }

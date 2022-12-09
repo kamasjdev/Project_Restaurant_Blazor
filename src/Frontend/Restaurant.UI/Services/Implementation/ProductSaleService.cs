@@ -3,7 +3,7 @@ using Restaurant.UI.Services.Abstractions;
 
 namespace Restaurant.UI.Services.Implementation
 {
-    public class ProductSaleService : IProductSaleService
+    internal sealed class ProductSaleService : IProductSaleService
     {
         private readonly List<ProductSaleDto> _productSales = new();
 
@@ -25,6 +25,16 @@ namespace Restaurant.UI.Services.Implementation
 
             _productSales.Remove(productSale);
             return Task.CompletedTask;
+        }
+
+        public Task<IEnumerable<ProductSaleDto>> GetAllInCartByEmailAsync(string email)
+        {
+            return Task.FromResult(_productSales.Where(p => p.Email == email && p.Order is null));
+        }
+
+        public Task<ProductSaleDto?> GetAsync(Guid productSaleId)
+        {
+            return Task.FromResult(_productSales.SingleOrDefault(ps => ps.Id == productSaleId));
         }
     }
 }

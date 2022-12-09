@@ -3,3 +3,12 @@
     flex-direction: row;
     flex-wrap: wrap;
 }
+
+
+.text-area {
+    resize: none;
+}
+
+.info-text {
+    font-size: 1.2rem;
+}
