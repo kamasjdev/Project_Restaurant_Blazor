@@ -31,10 +31,10 @@ namespace Restaurant.Infrastructure.Repositories.InMemory
             return _productSales.Where(p => p.OrderId is not null && p.OrderId == orderId);
         }
 
-        public async Task<IEnumerable<ProductSale>> GetAllByEmailAsync(string email)
+        public async Task<IEnumerable<ProductSale>> GetAllInCartByEmailAsync(string email)
         {
             await Task.CompletedTask;
-            return _productSales.Where(p => p.Email.Value == email);
+            return _productSales.Where(p => p.Email.Value == email && p.Order is null);
         }
 
         public async Task<ProductSale?> GetAsync(Guid id)

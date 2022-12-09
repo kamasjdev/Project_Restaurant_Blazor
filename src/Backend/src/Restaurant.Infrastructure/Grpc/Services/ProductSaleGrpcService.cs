@@ -103,7 +103,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var productSaleService = scope.ServiceProvider.GetRequiredService<IProductSaleService>();
-			var productSales = await productSaleService.GetAllByEmailAsync(request.Email);
+			var productSales = await productSaleService.GetAllInCartByEmailAsync(request.Email);
 			var response = new GetProductSalesByEmailResponse();
 			response.ProductSales.AddRange(productSales.Select(ps => new ProductSale
 			{

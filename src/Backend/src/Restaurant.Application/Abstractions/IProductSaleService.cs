@@ -9,6 +9,6 @@ namespace Restaurant.Application.Abstractions
         Task DeleteAsync(Guid id);
         Task<IEnumerable<ProductSaleDto>> GetAllByOrderIdAsync(Guid orderId);
         Task<ProductSaleDto?> GetAsync(Guid productSaleId);
-        Task<IEnumerable<ProductSaleDto>> GetAllByEmailAsync(string email);
+        Task<IEnumerable<ProductSaleDto>> GetAllInCartByEmailAsync(string email);
     }
 }

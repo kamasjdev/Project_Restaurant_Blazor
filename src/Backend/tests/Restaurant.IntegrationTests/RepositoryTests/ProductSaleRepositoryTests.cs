@@ -116,7 +116,7 @@ namespace Restaurant.IntegrationTests.RepositoryTests
             var productSale = await AddDefaultProductSaleAsync(product.Id, product.Price.Value, Email.Of("email@test.com"));
             var productSale2 = await AddDefaultProductSaleAsync(product.Id, product.Price.Value, Email.Of("email@test.com"));
 
-            var productSales = await _productSaleRepository.GetAllByEmailAsync(productSale.Email.Value);
+            var productSales = await _productSaleRepository.GetAllInCartByEmailAsync(productSale.Email.Value);
 
             productSales.ShouldNotBeEmpty();
             productSales.Count().ShouldBeGreaterThan(1);

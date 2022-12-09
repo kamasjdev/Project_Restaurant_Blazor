@@ -74,9 +74,9 @@ namespace Restaurant.Application.Services
             await _productSaleRepository.DeleteAsync(productSale);
         }
 
-        public async Task<IEnumerable<ProductSaleDto>> GetAllByEmailAsync(string email)
+        public async Task<IEnumerable<ProductSaleDto>> GetAllInCartByEmailAsync(string email)
         {
-            return (await _productSaleRepository.GetAllByEmailAsync(email)).Select(o => o.AsDto());
+            return (await _productSaleRepository.GetAllInCartByEmailAsync(email)).Select(o => o.AsDto());
         }
 
         public async Task<IEnumerable<ProductSaleDto>> GetAllByOrderIdAsync(Guid orderId)

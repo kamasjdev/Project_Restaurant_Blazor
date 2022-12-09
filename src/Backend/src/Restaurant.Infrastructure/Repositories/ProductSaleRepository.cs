@@ -45,9 +45,9 @@ namespace Restaurant.Infrastructure.Repositories
                            .Select(ps => new ProductSale(ps.Id, ps.ProductId, ps.ProductSaleState, ps.EndPrice, Email.Of(ps.Email), ps.AdditionId, ps.OrderId));
         }
 
-        public async Task<IEnumerable<ProductSale>> GetAllByEmailAsync(string email)
+        public async Task<IEnumerable<ProductSale>> GetAllInCartByEmailAsync(string email)
         {
-            var sql = "SELECT Id, ProductId, OrderId, AdditionId, EndPrice, Email, ProductSaleState FROM product_sales WHERE Email = @Email";
+            var sql = "SELECT Id, ProductId, OrderId, AdditionId, EndPrice, Email, ProductSaleState FROM product_sales WHERE Email = @Email AND OrderId IS NULL";
             _logger.LogInformation($"Infrastructure: Invoking query: {sql}");
             return (await _dbConnection.QueryAsync<ProductSaleDBO>(sql, new { Email = email }))
                            .Select(ps => new ProductSale(ps.Id, ps.ProductId, ps.ProductSaleState, ps.EndPrice, Email.Of(ps.Email), ps.AdditionId, ps.OrderId));

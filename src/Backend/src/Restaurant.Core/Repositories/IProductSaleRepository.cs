@@ -10,6 +10,6 @@ namespace Restaurant.Core.Repositories
         Task<ProductSale?> GetAsync(Guid id);
         Task<IEnumerable<ProductSale>> GetAllAsync();
         Task<IEnumerable<ProductSale>> GetAllByOrderIdAsync(Guid orderId);
-        Task<IEnumerable<ProductSale>> GetAllByEmailAsync(string email);
+        Task<IEnumerable<ProductSale>> GetAllInCartByEmailAsync(string email);
     }
 }
