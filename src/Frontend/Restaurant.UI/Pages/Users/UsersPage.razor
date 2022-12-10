@@ -1,0 +1,90 @@
+﻿@page "/users"
+@using Restaurant.UI.Components.LoadingIcon
+@using Restaurant.UI.Components.Modal
+@using Restaurant.UI.Components.Table
+@using Restaurant.UI.DTO;
+@using Restaurant.UI.Services.Abstractions;
+@inject IUserService UserService;
+@inject NavigationManager NavigationManager;
+
+<h3>Users</h3>
+
+@if (_loading)
+{
+    <LoadingIconComponent />
+}
+else
+{
+    <TableComponent Items="_users.ToList()">
+        <DataColumn TRowData="UserDto" Title="Id" Expression="u => u.Id" />
+        <DataColumn TRowData="UserDto" Title="Email" Expression="u => u.Email" />
+        <DataColumn TRowData="UserDto" Title="Created" Expression="u => u.CreatedAt" />
+        <DataColumn TRowData="UserDto" Title="Role" Expression="u => u.Role" />
+        <DataColumn TRowData="UserDto" Title="Action">
+            <button class="btn btn-warning me-2" @onclick='() => NavigationManager.NavigateTo($"/users/edit/{context.Id}")'>
+                Edit
+            </button>
+            <button class="btn btn-danger" @onclick="() => OpenModal(context)">
+                Delete
+            </button>
+        </DataColumn>
+    </TableComponent>
+
+    @if (_modalOpen)
+    {
+        <ModalComponent Title="Delete Addition" OnClose="CloseModal">
+            <Body>
+                <div class="text-info-delete">
+                    Do you wish to delete addition @_userToDelete?.Email with id @_userToDelete?.Id
+                </div>
+            </Body>
+            <Footer>
+                <button class="btn btn-danger me-2" @onclick="DeleteUser">
+                    Yes
+                </button>
+                <button class="btn btn-secondary" @onclick="CloseModal">
+                    No
+                </button>
+            </Footer>
+        </ModalComponent>
+    }
+}
+
+@code {
+    private IEnumerable<UserDto> _users = new List<UserDto>();
+    private bool _loading = true;
+    private bool _modalOpen = false;
+    private UserDto? _userToDelete;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await FetchUsers();
+        await base.OnInitializedAsync();
+    }
+
+    private void OpenModal(UserDto dto)
+    {
+        _modalOpen = true;
+        _userToDelete = dto;
+    }
+
+    private void CloseModal()
+    {
+        _userToDelete = null;
+        _modalOpen = false;
+    }
+
+    private async Task DeleteUser()
+    {
+        await UserService.DeleteAsync(_userToDelete.Id);
+        await FetchUsers();
+        CloseModal();
+    }
+
+    private async Task FetchUsers()
+    {
+        _loading = true;
+        _users = await UserService.GetAllAsync();
+        _loading = false;
+    }
+}

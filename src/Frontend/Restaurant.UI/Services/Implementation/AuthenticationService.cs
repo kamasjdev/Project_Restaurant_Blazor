@@ -7,36 +7,23 @@ namespace Restaurant.UI.Services.Implementation
     internal sealed class AuthenticationService : IAuthenticationService
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly IList<User> _users = new List<User>
-        {
-            new User { Id = Guid.NewGuid(), Email = "admin@admin.com", Password = "NaChilku123!", CreatedAt = new DateTime(2022, 12, 5, 18, 45, 30), Role = "admin" },
-            new User { Id = Guid.NewGuid(), Email = "user@user.com", Password = "NieZgadnies123!", CreatedAt = new DateTime(2022, 12, 5, 18, 45, 30), Role = "user" }
-        };
+        private readonly IUserService _userService;
         private const string TOKEN = "token";
 
         public AuthenticationService(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
+            _userService = serviceProvider.GetRequiredService<IUserService>();
         }
 
         public async Task<UserDto> SignInAsync(SignInDto signInDto)
         {
             using var scope = _serviceProvider.CreateScope();
             var localStorageService = scope.ServiceProvider.GetRequiredService<ILocalStorageService>();
-            var user = _users.SingleOrDefault(u => u.Email == signInDto.Email);
-
-            if (user is null)
-            {
-                throw new InvalidOperationException("Invalid Credentials");
-            }
-
-            if (!string.Equals(user.Password, signInDto.Password, StringComparison.InvariantCultureIgnoreCase))
-            {
-                throw new InvalidOperationException("Invalid Credentials");
-            }
-
+            var auth = await _userService.SignInAsync(signInDto);
+            var user = ((UserService)_userService).GetAsync(signInDto.Email);
             var userDto = new UserDto { Id = user.Id, Email = user.Email, CreatedAt = user.CreatedAt, Role = user.Role };
-            await localStorageService.SetItemAsync("token", userDto);
+            await localStorageService.SetItemAsync(TOKEN, userDto);
             return userDto;
         }
 
@@ -49,18 +36,8 @@ namespace Restaurant.UI.Services.Implementation
 
         public Task SignUpAsync(SignUpDto signUpDto)
         {
-            _users.Add(new User { Id = Guid.NewGuid(), Email = signUpDto.Email, Password = signUpDto.Password,
-                CreatedAt = DateTime.UtcNow, Role = string.IsNullOrWhiteSpace(signUpDto.Role) ? "user" : signUpDto.Role });
+            _userService.SignUpAsync(signUpDto);
             return Task.CompletedTask;
-        }
-
-        private class User
-        {
-            public Guid Id { get; set; }
-            public string? Email { get; set; }
-            public string? Role { get; set; }
-            public DateTime CreatedAt { get; set; }
-            public string? Password { get; set; }
         }
     }    
 }

@@ -12,6 +12,7 @@ namespace Restaurant.UI.Services
 			services.AddSingleton<IAuthenticationService, AuthenticationService>();
 			services.AddSingleton<IProductSaleService, ProductSaleService>();
 			services.AddSingleton<IOrderService, OrderService>();
+			services.AddSingleton<IUserService, UserService>();
 			return services;
 		}
 	}

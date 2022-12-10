@@ -248,7 +248,8 @@ else
             ProductSaleState = "New",
             Product = _productChoosed,
             Addition = _additionChoosed,
-            EndPrice = _additionChoosed is not null ? _productChoosed.Price + _additionChoosed.Price : _productChoosed.Price
+            EndPrice = _additionChoosed is not null ? _productChoosed.Price + _additionChoosed.Price : _productChoosed.Price,
+            Order = Order
         };
         await ProductSaleService.AddAsync(productSale);
         var productSales = new List<ProductSaleDto>(_form.ProductSales);
