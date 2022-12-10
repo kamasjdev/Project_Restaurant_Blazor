@@ -6,6 +6,9 @@
 @using Restaurant.UI.DTO;
 @using Restaurant.UI.Services.Abstractions;
 @inject IOrderService OrderService;
+@inject IProductService ProductService;
+@inject IAdditionService AdditionService;
+@inject NavigationManager NavigationManager;
 
 <AuthorizationComponent Roles="admin" />
 <h3>OrderEditPage</h3>
@@ -22,7 +25,7 @@ else
     }
     else
     {
-        <OrderEditComponent Order="_order" />
+        <OrderEditComponent Order="_order" Products="_products" Additions="_additions" OnSend="Send" />
     }
 }
 
@@ -32,13 +35,39 @@ else
 
     private bool _loading = true;
     private OrderDetailsDto? _order;
+    private IEnumerable<ProductDto> _products = new List<ProductDto>();
+    private IEnumerable<AdditionDto> _additions = new List<AdditionDto>();
 
     protected override async Task OnInitializedAsync()
     {
-        _order = await OrderService.GetAsync(Id);
+        var order = OrderService.GetAsync(Id);
+        var products = ProductService.GetAllAsync();
+        var additions = AdditionService.GetAllAsync();
+        var tasks = new List<Task>() { order, products, additions };
+        await Task.WhenAll(tasks);
+        _order = await order;
+        _products = await products;
+        _additions = await additions;
         await base.OnInitializedAsync();
         await Task.Delay(500);
         _loading = false;
+    }
 
+    private async Task Send(OrderDetailsDto dto)
+    {
+        await OrderService.UpdateAsync(new AddOrderDto
+        {
+            Id = dto.Id,
+            Email = dto.Email,
+            Note = dto.Note,
+            ProductSaleIds = dto.Products.Select(ps => ps.Id)
+        });
+        _order.Note = dto.Note;
+        _order.Email = dto.Email;
+        _order.Created = dto.Created;
+        _order.OrderNumber = dto.OrderNumber;
+        _order.Price = dto.Price;
+        _order.Products = dto.Products;
+        NavigationManager.NavigateTo("/orders");
     }
 }
