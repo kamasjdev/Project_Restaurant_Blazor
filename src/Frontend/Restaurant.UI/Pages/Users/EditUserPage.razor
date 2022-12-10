@@ -1,0 +1,107 @@
+﻿@page "/users/edit/{Id:guid}"
+@using Restaurant.UI.Components
+@using Restaurant.UI.Components.Errors
+@using Restaurant.UI.Components.LoadingIcon
+@using Restaurant.UI.Components.NavigationButton;
+@using Restaurant.UI.Components.Inputs;
+@using System.ComponentModel.DataAnnotations;
+@using Restaurant.UI.DTO;
+@using Restaurant.UI.Services.Abstractions;
+@using System.Linq.Expressions;
+@inject IUserService UserService;
+@inject NavigationManager NavigationManager;
+
+<AuthorizationComponent Roles="admin" />
+<h3>Edit User</h3>
+
+@if(_loading)
+{
+    <LoadingIconComponent />
+}
+else
+{
+    <EditForm EditContext="@_editContext" OnValidSubmit="@HandleValidSubmit">
+        <DataAnnotationsValidator />
+
+        <div class="mb-2">
+            <InputTextFormComponent Label="Email" Type="InputTextFormType.Email" @bind-Value="_form.Email" Error="@(GetValidationMessage(context, () => _form.Email))" />
+        </div>
+        <div class="mb-2">
+            <InputTextFormComponent Label="Password" Type="InputTextFormType.Password" @bind-Value="_form.Password" Error="@(GetValidationMessage(context, () => _form.Password))" />
+        </div>
+        <div class="mb-2">
+            <InputSelectFormComponent Label="Role" @bind-Value="@_form.Role" TData="string"
+                                      Options="_roles" />
+            <ValidationMessage For="@(() => _form.Role)" />
+        </div>
+        @if (_error is not null)
+        {
+            <div class="mt-2">
+                <ErrorComponent Text="@_error" />
+            </div>
+        }
+        <div class="mt-2">
+            <button class="btn btn-success" type="submit">Save</button>
+            <NavigationButtonComponent Text="Cancel" Url="/users" />
+        </div>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    public bool _loading { get; set; } = true;
+    private UserEditForm _form { get; set; } = new();
+    private EditContext? _editContext;
+    private string? _error;
+    private Dictionary<string, string> _roles = new() { { "user", "user" }, { "admin", "admin" } };
+    private UserDto? _user;
+
+    private class UserEditForm
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = "";
+
+        [Required]
+        [RegularExpression("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d\\w\\W]{8,}$", ErrorMessage = "Password should have at least 8 characters, including upper letter and number")]
+        public string Password { get; set; } = "";
+
+        [Required]
+        public string Role { get; set; } = "";
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _user = await UserService.GetAsync(Id);
+        _form.Role = _user.Role;
+        _form.Email = _user.Email;
+        _editContext = new(_form);
+        base.OnInitialized();
+        _loading = false;
+    }
+
+    private string GetValidationMessage(EditContext editContext, Expression<Func<object>> field)
+    {
+        var validationMessage = editContext.GetValidationMessages(field).FirstOrDefault();
+        return validationMessage ?? "";
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (_editContext is null)
+        {
+            _error = "Something bad happen, please try again later";
+            return;
+        }
+
+        if (!_editContext.Validate())
+        {
+            return;
+        }
+
+        await UserService.UpdateAsync(new UpdateUserDto(Id, _form.Email, _form.Password, _form.Role));
+        NavigationManager.NavigateTo("/users");
+    }
+}

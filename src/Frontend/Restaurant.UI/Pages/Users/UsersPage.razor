@@ -1,12 +1,15 @@
 ﻿@page "/users"
+@using Restaurant.UI.Components
 @using Restaurant.UI.Components.LoadingIcon
 @using Restaurant.UI.Components.Modal
+@using Restaurant.UI.Components.NavigationButton
 @using Restaurant.UI.Components.Table
 @using Restaurant.UI.DTO;
 @using Restaurant.UI.Services.Abstractions;
 @inject IUserService UserService;
 @inject NavigationManager NavigationManager;
 
+<AuthorizationComponent Roles="admin" />
 <h3>Users</h3>
 
 @if (_loading)
@@ -15,6 +18,7 @@
 }
 else
 {
+    <NavigationButtonComponent CssClass="btn btn-success mt-2 mb-2" Url="/users/add" Text="Add" />
     <TableComponent Items="_users.ToList()">
         <DataColumn TRowData="UserDto" Title="Id" Expression="u => u.Id" />
         <DataColumn TRowData="UserDto" Title="Email" Expression="u => u.Email" />
