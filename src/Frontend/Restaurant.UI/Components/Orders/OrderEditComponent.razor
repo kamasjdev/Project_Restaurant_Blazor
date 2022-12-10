@@ -63,7 +63,7 @@ else
                         Choose product and if you would like addition:
                     </div>
                     <div>
-                        <TableComponent Items="Products.ToList()" TRowData="ProductDto" OnClick="(p) => ProductToChoose(p)" RowClass='(row, _) => row.Id == _productChoosed?.Id ? "table-success" : ""'>
+                        <TableComponent Items="Products.ToList()" TRowData="ProductDto" OnClick="(p) => ProductToChoose(p)" RowClass='(row, _) => row.Id == _productChoosed?.Id ? "table-success" : ""' PageSize="2">
                             <DataColumn TRowData="ProductDto" Title="Id" Expression="p => p.Id" />
                             <DataColumn TRowData="ProductDto" Title="Product Name" Expression="p => p.ProductName" />
                             <DataColumn TRowData="ProductDto" Title="Product Kind" Expression="p => p.ProductKind" />
@@ -71,7 +71,7 @@ else
                         </TableComponent>
                     </div>
                     <div>
-                        <TableComponent Items="Additions.ToList()" TRowData="AdditionDto" OnClick="(a) => AdditionToChoose(a)" RowClass='(row, _) => row.Id == _additionChoosed?.Id ? "table-success" : ""'>
+                        <TableComponent Items="Additions.ToList()" TRowData="AdditionDto" OnClick="(a) => AdditionToChoose(a)" RowClass='(row, _) => row.Id == _additionChoosed?.Id ? "table-success" : ""' PageSize="2">
                             <DataColumn TRowData="AdditionDto" Title="Id" Expression="a => a.Id" />
                             <DataColumn TRowData="AdditionDto" Title="Addition Name" Expression="a => a.AdditionName" />
                             <DataColumn TRowData="AdditionDto" Title="Addition Kind" Expression="a => a.AdditionKind" />

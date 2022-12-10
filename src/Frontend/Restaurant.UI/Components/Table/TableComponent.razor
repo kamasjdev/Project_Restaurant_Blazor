@@ -6,7 +6,7 @@
 <table class="table">
     <thead>
         <tr>
-            @foreach (var column in columns)
+            @foreach (var column in _columns)
             {
                 @column.HeaderTemplate
             }
@@ -16,10 +16,12 @@
         @if (Items is not null)
         {
             var index = 0;
-            foreach (var item in Items)
+            foreach (var item in Items
+                                    .Skip(PageSize * (_currentPage - 1))
+                                    .Take(PageSize))
             {
                 <tr @key="item.GetHashCode()" class="@(RowClass?.Invoke(item, index++))" @onclick="() => ClickRow(item)">
-                    @foreach (var column in columns)
+                    @foreach (var column in _columns)
                     {
                         @column.CellTemplate(item)
                     }
@@ -28,6 +30,28 @@
         }
     </tbody>
 </table>
+<div class="row">
+    <ul class="pagination">
+        @for (int i = 1; i <= _pages; i++)
+        {
+            var currentIndex = i;
+            @if (_currentPage == i)
+            {
+                <li class="page-item active">
+                    <a class="page-link pager-click" @onclick="() => NextPage(currentIndex)">
+                        @currentIndex
+                    </a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item">
+                    <a class="page-link pager-click" @onclick="() => NextPage(currentIndex)">@currentIndex</a>
+                </li>
+            }
+        }
+    </ul>
+</div>
 
 @code {
     [Parameter]
@@ -42,31 +66,60 @@
     [Parameter]
     public EventCallback<TRowData> OnClick { get; set; }
 
+    [Parameter]
+    public int PageSize { get; set; } = 20;
+
+    private int _currentPage = 1;
+    private int _pages = 1;
+
     private async Task ClickRow(TRowData rowData)
     {
         await OnClick.InvokeAsync(rowData);
     }
 
-    private readonly List<DataColumn<TRowData>> columns = new List<DataColumn<TRowData>>();
-    private int columnsSize = 0;
+    private readonly List<DataColumn<TRowData>> _columns = new List<DataColumn<TRowData>>();
+    private int _columnsSize = 0;
 
     internal void AddColumn(DataColumn<TRowData> column)
     {
-        columns.Add(column);
+        _columns.Add(column);
     }
 
     private bool AreColumsChanged()
     {
-        var previousColumnsSize = columnsSize;
-        columnsSize = columns.Count;
-        return Items is not null && columnsSize != previousColumnsSize;
+        var previousColumnsSize = _columnsSize;
+        _columnsSize = _columns.Count;
+        return Items is not null && _columnsSize != previousColumnsSize;
     }
 
     protected override void OnAfterRender(bool firstRender)
     {
+        if (firstRender)
+        {
+            _pages = CalculatePages();
+        }
+
         if (AreColumsChanged())
         {
+            PageSize = PageSize <= 0 ? 20 : PageSize;
+            _pages = CalculatePages();
             StateHasChanged();
         }
+    }
+
+    private void NextPage(int nextPage)
+    {
+        if (nextPage == _currentPage)
+        {
+            return;
+        }
+
+        _currentPage = nextPage;
+    }
+
+    private int CalculatePages()
+    {
+        var result = (int) Math.Ceiling((Items?.Count ?? 0) / (double)PageSize);
+        return result;
     }
 }
