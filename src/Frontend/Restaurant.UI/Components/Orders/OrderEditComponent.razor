@@ -1,0 +1,138 @@
+﻿@using Restaurant.UI.Components.Errors
+@using Restaurant.UI.Components.Inputs
+@using Restaurant.UI.Components.Modal
+@using Restaurant.UI.Components.NavigationButton
+@using Restaurant.UI.Components.Table
+@using Restaurant.UI.DTO;
+@using System.ComponentModel.DataAnnotations;
+@using System.Linq.Expressions;
+
+@if (Order is null)
+{
+    <ErrorComponent Text="Invalid Order" />
+}
+else
+{
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <ErrorComponent Text="@_error" />
+    }
+
+    <EditForm EditContext="@_editContext" OnValidSubmit="@HandleValidSubmit">
+        <InputTextFormComponent Label="Email" Type="InputTextFormType.Email" @bind-Value="@_form.Email"
+                            Error="@(GetValidationMessage(context, () => _form.Email))" />
+        <div class="form-group">
+            <label class="d-flex" for="text-area-notes">Note</label>
+            <textarea id="text-area-notes" class="form-control text-area" @bind="@_form.Note" maxlength="5000" />
+        </div>
+        <div class="mt-2">
+            <button class="btn btn-primary" type="button" @onclick="() => _openModal = true">
+                Add New Product Sale
+            </button>
+        </div>
+        <div class="mt-2">
+            <TableComponent Items="_form.ProductSales" TRowData="ProductSaleDto" OnClick="(p) => ProducSaleChoosed(p)" RowClass='(row, _) => row.Id == _productSaleChoosed?.Id ? "table-success" : ""'>
+                <DataColumn TRowData="ProductSaleDto" Title="Id" Expression="ps => ps.Id" />
+                <DataColumn TRowData="ProductSaleDto" Title="Product Id" Expression="ps => ps.Product.Id" />
+                <DataColumn TRowData="ProductSaleDto" Title="Product Name" Expression="ps => ps.Product.ProductName" />
+                <DataColumn TRowData="ProductSaleDto" Title="Addition Id" Expression='ps => ps.Addition == null ? "-" : ps.Addition.Id' />
+                <DataColumn TRowData="ProductSaleDto" Title="Addition Name" Expression='ps => ps.Addition == null ? "-" : (string.IsNullOrWhiteSpace(ps.Addition.AdditionName) ? "-" : ps.Addition.AdditionName)' />
+                <DataColumn TRowData="ProductSaleDto" Title="Price" Expression="ps => ps.EndPrice" />
+            </TableComponent>
+        </div>
+        <div>
+            <button class="btn btn-success">
+                Save
+            </button>
+            <NavigationButtonComponent Text="Cancel" Url="/orders" CssClass="btn btn-secondary" />
+        </div>
+    </EditForm>
+    
+@*    @if (_openModal)
+    {
+            <ModalComponent Title="Delete Addition" OnClose="CloseModal">
+                <Body>
+                    <div>
+                        <TableComponent Items="Products">
+                            <DataColumn TRowData="ProductDto" Title="Id" Expression="ps => ps.Id" OnClick="() => Test(context)" />
+                        </TableComponent>
+                    </div>
+                </Body>
+                <Footer>
+                    <button class="btn btn-success me-2" @onclick="DeleteOrder">
+                        Add
+                    </button>
+                    <button class="btn btn-secondary" @onclick="CloseModal">
+                        Cancel
+                    </button>
+                </Footer>
+        </ModalComponent>
+    }*@
+}
+
+
+@code {
+    [Parameter]
+    public OrderDetailsDto? Order { get; set; }
+
+    [Parameter]
+    public IEnumerable<ProductDto> Products { get; set; } = new List<ProductDto>();
+
+    [Parameter]
+    public IEnumerable<AdditionDto> Additions { get; set; } = new List<AdditionDto>();
+
+    private Form? _form;
+    private EditContext? _editContext;
+    private string _error = "";
+    private bool _openModal = false;
+    private ProductSaleDto? _productSaleChoosed;
+
+    private class Form
+    {
+        [Required]
+        [EmailAddress]
+        public string? Email { get; set; }
+
+        public string? Note { get; set; }
+
+        public List<ProductSaleDto> ProductSales { get; set; } = new();
+    }
+
+    protected override void OnInitialized()
+    {
+        _form = new Form { Email = Order.Email, Note = Order.Note, ProductSales = new List<ProductSaleDto>(Order.Products) };
+        _editContext = new(_form);
+        base.OnInitialized();
+    }
+
+    private string GetValidationMessage(EditContext editContext, Expression<Func<object>> field)
+    {
+        var validationMessage = editContext.GetValidationMessages(field).FirstOrDefault();
+        return validationMessage ?? "";
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (_editContext is null)
+        {
+            _error = "Something bad happen, please try again later";
+            return;
+        }
+
+        if (!_editContext.Validate())
+        {
+            return;
+        }
+    }
+
+    private void ProducSaleChoosed(ProductSaleDto dto)
+    {
+        if (_productSaleChoosed is not null && _productSaleChoosed.Id == dto.Id)
+        {
+            _productSaleChoosed = null;
+            return;
+        }
+
+        _productSaleChoosed = dto;
+    }
+}

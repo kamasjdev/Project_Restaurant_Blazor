@@ -1,9 +1,98 @@
 ﻿@page "/orders"
 @using Restaurant.UI.Components
+@using Restaurant.UI.Components.Modal
+@using Restaurant.UI.Components.Table
+@using Restaurant.UI.DTO;
+@using Restaurant.UI.Services.Abstractions;
+@attribute [Authorize]
+@inject IJSRuntime JSRuntime;
+@inject IOrderService OrderService;
+@inject NavigationManager NavigationManager;
 
 <AuthorizationComponent Roles="admin" />
-<h3>OrdersPage</h3>
+
+<h3>Orders</h3>
+
+<TableComponent Items="_orders">
+    <DataColumn TRowData="OrderDto" Title="Id" Expression="o => o.Id" />
+    <DataColumn TRowData="OrderDto" Title="Order Number" Expression="o => o.OrderNumber" />
+    <DataColumn TRowData="OrderDto" Title="Product Name" Expression="o => o.Email" />
+    <DataColumn TRowData="OrderDto" Title="Price" Expression="o => o.Price" Format="{0:0.00}" />
+    <DataColumn TRowData="OrderDto" Title="Created" Expression="o => o.Created" />
+    <DataColumn TRowData="OrderDto" Title="Action">
+        <button class="btn btn-primary" @onclick="() => ShowDetails(context.Id)">
+            Details
+        </button>
+        <button class="btn btn-warning" @onclick='() => NavigationManager.NavigateTo($"/orders/edit/{context.Id}")'>
+            Edit
+        </button>
+        <button class="btn btn-danger" @onclick="() => OpenModal(context)">
+            Delete
+        </button>
+    </DataColumn>
+</TableComponent>
+
+@if (_openModal)
+{
+        <ModalComponent Title="Delete Addition" OnClose="CloseModal">
+        <Body>
+            <div class="text-info-delete">
+                Do you wish to delete order @_orderToDelete?.OrderNumber with id @_orderToDelete?.Id
+            </div>
+        </Body>
+        <Footer>
+            <button class="btn btn-danger me-2" @onclick="DeleteOrder">
+                Yes
+            </button>
+            <button class="btn btn-secondary" @onclick="CloseModal">
+                No
+            </button>
+        </Footer>
+    </ModalComponent>
+}
 
 @code {
+    private List<OrderDto> _orders = new();
+    private bool _openModal = false;
+    private OrderDto? _orderToDelete;
 
+    protected override async Task OnInitializedAsync()
+    {
+        await FetchOrders();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task ShowDetails(Guid id)
+    {
+        await JSRuntime.InvokeVoidAsync("open", $"/orders/view/{id}", "_blank");
+    }
+
+    private void OpenModal(OrderDto orderDto)
+    {
+        _openModal = true;
+        _orderToDelete = orderDto;
+    }
+
+    private void CloseModal()
+    {
+        _openModal = false;
+    }
+
+    private async Task DeleteOrder()
+    {
+        if (_orderToDelete is null)
+        {
+            _openModal = false;
+            return;
+        }
+
+        await OrderService.DeleteAsync(_orderToDelete.Id);
+        _openModal = false;
+        await FetchOrders();
+    }
+
+    private async Task FetchOrders()
+    {
+        _orders = new List<OrderDto>(await OrderService.GetAllAsync());
+    }
 }

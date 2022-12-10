@@ -1,10 +1,44 @@
 ﻿@page "/orders/edit/{Id:guid}"
 @using Restaurant.UI.Components
+@using Restaurant.UI.Components.Errors
+@using Restaurant.UI.Components.LoadingIcon
+@using Restaurant.UI.Components.Orders
+@using Restaurant.UI.DTO;
+@using Restaurant.UI.Services.Abstractions;
+@inject IOrderService OrderService;
 
 <AuthorizationComponent Roles="admin" />
 <h3>OrderEditPage</h3>
 
+@if (_loading)
+{
+    <LoadingIconComponent />
+}
+else
+{
+    @if (_order is null)
+    {
+        <ErrorComponent Text="@($"Order with id: '{Id}' was not found")" />
+    }
+    else
+    {
+        <OrderEditComponent Order="_order" />
+    }
+}
+
 @code {
     [Parameter]
     public Guid Id { get; set; }
+
+    private bool _loading = true;
+    private OrderDetailsDto? _order;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _order = await OrderService.GetAsync(Id);
+        await base.OnInitializedAsync();
+        await Task.Delay(500);
+        _loading = false;
+
+    }
 }

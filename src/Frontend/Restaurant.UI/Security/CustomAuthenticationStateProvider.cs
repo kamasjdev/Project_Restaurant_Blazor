@@ -26,7 +26,7 @@ namespace Restaurant.UI.Security
             }
 
             return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
-                { new Claim("id", token.Id.ToString()), new Claim("email", token.Email), new Claim("role", token.Role) }
+                { new Claim("id", token.Id.ToString()), new Claim("email", token.Email), new Claim(ClaimTypes.Role, token.Role) }
             , authenticationType: AUTH))); // need to specify authenticate type, if not specified user will be annonymous
         }
 

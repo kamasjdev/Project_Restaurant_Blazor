@@ -18,7 +18,7 @@
             var index = 0;
             foreach (var item in Items)
             {
-                <tr @key="item.GetHashCode()" class="@(RowClass?.Invoke(item, index++))">
+                <tr @key="item.GetHashCode()" class="@(RowClass?.Invoke(item, index++))" @onclick="() => ClickRow(item)">
                     @foreach (var column in columns)
                     {
                         @column.CellTemplate(item)
@@ -38,6 +38,14 @@
 
     [Parameter]
     public Func<TRowData, int, string>? RowClass { get; set; }
+
+    [Parameter]
+    public EventCallback<TRowData> OnClick { get; set; }
+
+    private async Task ClickRow(TRowData rowData)
+    {
+        await OnClick.InvokeAsync(rowData);
+    }
 
     private readonly List<DataColumn<TRowData>> columns = new List<DataColumn<TRowData>>();
     private int columnsSize = 0;
