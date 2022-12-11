@@ -44,7 +44,7 @@ namespace Restaurant.Infrastructure.Grpc
                 }
                 throw new ValidationException(messages);
             }
-            var dto = new AdditionDto { Id = id, AdditionName = addition.AdditionName, Price = price, AdditionKind = addition.AdditionName };
+            var dto = new AdditionDto { Id = id, AdditionName = addition.AdditionName, Price = price, AdditionKind = addition.AdditionKind };
             return dto;
         }
 

@@ -75,10 +75,7 @@ else
     private async Task Send(AdditionDto additionDto)
     {
         _error = "";
-        var addition = await AdditionService.GetAsync(Id);
-        addition!.AdditionName = additionDto.AdditionName;
-        addition!.Price = additionDto.Price;
-        addition!.AdditionKind = additionDto.AdditionKind;
+        additionDto.Id = Id;
 
         try
         {
