@@ -53,7 +53,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
-			_ = Guid.TryParse(request.UserId, out var userId);
+			var userId = request.UserId.AsGuid();
 			await userService.UpdateAsync(new UpdateUserDto(userId, request.Email, request.Password, request.Role));
 			return new Empty();
 		}
@@ -62,7 +62,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
-			_ = Guid.TryParse(request.Id, out var id);
+			var id = request.Id.AsGuid();
 			var user = await userService.GetAsync(id);
 
 			if (user is null)
@@ -83,7 +83,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
-			_ = Guid.TryParse(request.UserId, out var userId);
+			var userId = request.UserId.AsGuid();
 			await userService.UpdateRoleAsync(new UpdateRoleDto(userId, request.Role));
 			return new Empty();
 		}
@@ -92,7 +92,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
-			_ = Guid.TryParse(request.UserId, out var userId);
+			var userId = request.UserId.AsGuid();
 			await userService.ChangeEmailAsync(new ChangeEmailDto(userId, request.Email));
 			return new Empty();
 		}
@@ -101,7 +101,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
-			_ = Guid.TryParse(request.UserId, out var userId);
+			var userId = request.UserId.AsGuid();
 			await userService.ChangePasswordAsync(new ChangePasswordDto(userId, request.Password, request.NewPassword, request.NewPasswordConfirm));
 			return new Empty();
 		}

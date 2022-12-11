@@ -2,7 +2,6 @@
 using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Restaurant.Application.Abstractions;
-using Restaurant.Application.DTO;
 using Restaurant.Application.Exceptions;
 using Restaurant.Shared.ProductProto;
 
@@ -21,8 +20,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var productService = scope.ServiceProvider.GetRequiredService<IProductService>();
-			_ = decimal.TryParse(request.Price, out var price);
-			var dto = new ProductDto { ProductName = request.ProductName, Price = price, ProductKind = request.ProductKind };
+			var dto = request.AsDto();
 			await productService.AddAsync(dto);
 			return new AddProductResponse { Id = dto.Id.ToString() };
 		}
@@ -31,10 +29,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var productService = scope.ServiceProvider.GetRequiredService<IProductService>();
-			_ = decimal.TryParse(request.Price, out var price);
-			_ = Guid.TryParse(request.Id, out var id);
-			var dto = new ProductDto { Id = id, ProductName = request.ProductName, Price = price, ProductKind = request.ProductKind };
-			await productService.UpdateAsync(dto);
+			await productService.UpdateAsync(request.AsDto());
 			return new Empty();
 		}
 
@@ -42,8 +37,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var productService = scope.ServiceProvider.GetRequiredService<IProductService>();
-			_ = Guid.TryParse(request.Id, out var id);
-			await productService.DeleteAsync(id);
+			await productService.DeleteAsync(request.Id.AsGuid());
 			return new Empty();
 		}
 
@@ -51,7 +45,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var productService = scope.ServiceProvider.GetRequiredService<IProductService>();
-			_ = Guid.TryParse(request.Id, out var id);
+			var id = request.Id.AsGuid();
 			var product = await productService.GetAsync(id);
 
 			if (product is null)

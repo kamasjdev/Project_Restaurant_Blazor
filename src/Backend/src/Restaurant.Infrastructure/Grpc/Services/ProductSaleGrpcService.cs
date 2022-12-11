@@ -2,7 +2,6 @@
 using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Restaurant.Application.Abstractions;
-using Restaurant.Application.DTO;
 using Restaurant.Application.Exceptions;
 using Restaurant.Shared.ProductSaleProto;
 
@@ -21,20 +20,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var productSaleService = scope.ServiceProvider.GetRequiredService<IProductSaleService>();
-			Guid? additionId = null;
-			if (string.IsNullOrWhiteSpace(request.AdditionId))
-			{
-				_ = Guid.TryParse(request.AdditionId, out var additionIdParsed);
-				additionId = additionIdParsed;
-			}
-			Guid? orderId = null;
-			if (string.IsNullOrWhiteSpace(request.OrderId))
-			{
-				_ = Guid.TryParse(request.OrderId, out var orderIdParsed);
-				orderId = orderIdParsed;
-			}
-			_ = Guid.TryParse(request.ProductId, out var productId);
-			var dto = new AddProductSaleDto { AdditionId = additionId, OrderId = orderId, Email = request.Email, ProductId = productId };
+			var dto = request.AsDto();
 			await productSaleService.AddAsync(dto);
 			return new AddProductSaleResponse { Id = dto.Id.ToString() };
 		}
@@ -43,22 +29,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var productSaleService = scope.ServiceProvider.GetRequiredService<IProductSaleService>();
-			_ = Guid.TryParse(request.Id, out var id);
-			Guid? additionId = null;
-			if (string.IsNullOrWhiteSpace(request.AdditionId))
-			{
-				_ = Guid.TryParse(request.AdditionId, out var additionIdParsed);
-				additionId = additionIdParsed;
-			}
-			Guid? orderId = null;
-			if (string.IsNullOrWhiteSpace(request.OrderId))
-			{
-				_ = Guid.TryParse(request.OrderId, out var orderIdParsed);
-				orderId = orderIdParsed;
-			}
-			_ = Guid.TryParse(request.ProductId, out var productId);
-			var dto = new AddProductSaleDto { Id = id, AdditionId = additionId, OrderId = orderId, Email = request.Email, ProductId = productId };
-			await productSaleService.UpdateAsync(dto);
+			await productSaleService.UpdateAsync(request.AsDto());
 			return new Empty();
 		}
 
@@ -66,8 +37,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var productSaleService = scope.ServiceProvider.GetRequiredService<IProductSaleService>();
-			_ = Guid.TryParse(request.Id, out var id);
-			await productSaleService.DeleteAsync(id);
+			await productSaleService.DeleteAsync(request.Id.AsGuid());
 			return new Empty();
 		}
 
@@ -75,7 +45,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var productSaleService = scope.ServiceProvider.GetRequiredService<IProductSaleService>();
-			_ = Guid.TryParse(request.Id, out var id);
+			var id = request.Id.AsGuid();
 			var productSale = await productSaleService.GetAsync(id);
 
 			if (productSale is null)
@@ -126,7 +96,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var productSaleService = scope.ServiceProvider.GetRequiredService<IProductSaleService>();
-			_ = Guid.TryParse(request.OrderId, out var orderId);
+			var orderId = request.OrderId.AsGuid();
 			var productSales = await productSaleService.GetAllByOrderIdAsync(orderId);
 			var response = new GetProductSalesByOrderIdResponse();
 			response.ProductSales.AddRange(productSales.Select(ps => new ProductSale

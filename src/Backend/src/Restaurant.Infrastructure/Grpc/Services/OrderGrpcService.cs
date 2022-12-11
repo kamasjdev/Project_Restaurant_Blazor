@@ -2,7 +2,6 @@
 using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Restaurant.Application.Abstractions;
-using Restaurant.Application.DTO;
 using Restaurant.Application.Exceptions;
 using Restaurant.Shared.OrderProto;
 
@@ -21,8 +20,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
-			var productSaleIds = request.ProductSaleIds.Select(p => { Guid.TryParse(p.Id, out var id); return id; });
-			var dto = new AddOrderDto { Email = request.Email, Note = request.Note, ProductSaleIds = productSaleIds };
+			var dto = request.AsDto();
 			await orderService.AddAsync(dto);
 			return new AddOrderResponse { Id = dto.Id.ToString() };
 		}
@@ -31,9 +29,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
-			var productSaleIds = request.ProductSaleIds.Select(p => { Guid.TryParse(p.Id, out var id); return id; });
-			var dto = new AddOrderDto { Email = request.Email, Note = request.Note, ProductSaleIds = productSaleIds };
-			await orderService.AddAsync(dto);
+			await orderService.AddAsync(request.AsDto());
 			return new Empty();
 		}
 
@@ -41,8 +37,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
-			_ = Guid.TryParse(request.Id, out var id);
-			await orderService.DeleteAsync(id);
+			await orderService.DeleteAsync(request.Id.AsGuid());
 			return new Empty();
 		}
 
@@ -50,8 +45,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
-			_ = Guid.TryParse(request.Id, out var id);
-			await orderService.DeleteWithPositionsAsync(id);
+			await orderService.DeleteWithPositionsAsync(request.Id.AsGuid());
 			return new Empty();
 		}
 
@@ -59,7 +53,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
-			_ = Guid.TryParse(request.Id, out var id);
+			var id = request.Id.AsGuid();
 			var order = await orderService.GetAsync(id);
 
 			if (order is null)
