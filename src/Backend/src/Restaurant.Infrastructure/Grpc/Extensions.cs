@@ -1,10 +1,22 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Restaurant.Infrastructure.Grpc.Interceptors;
 using Restaurant.Infrastructure.Grpc.Services;
 
 namespace Restaurant.Infrastructure.Grpc
 {
     internal static class Extensions
     {
+        public static IServiceCollection AddGrpcCommunication(this IServiceCollection services) 
+        {
+            services.AddGrpc(options =>
+            {
+                options.Interceptors.Add<GrpcExceptionInterceptor>();
+            });
+            return services;
+        }
+
         public static WebApplication UseGrpc(this WebApplication app)
         {
             app.UseGrpcWeb();

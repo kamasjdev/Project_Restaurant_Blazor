@@ -6,6 +6,7 @@ using Restaurant.Shared.OrderProto;
 using Restaurant.Shared.ProductProto;
 using Restaurant.Shared.ProductSaleProto;
 using Restaurant.Shared.UserProto;
+using Grpc.Core.Interceptors;
 
 namespace Restaurant.UI.Grpc
 {

@@ -1,4 +1,6 @@
-﻿using Restaurant.UI.DTO;
+﻿using Grpc.Core;
+using Restaurant.Shared.AdditionProto;
+using Restaurant.UI.DTO;
 using Restaurant.UI.Services.Abstractions;
 
 namespace Restaurant.UI.Services.Implementation
@@ -13,13 +15,25 @@ namespace Restaurant.UI.Services.Implementation
 			new AdditionDto { Id = Guid.NewGuid(), AdditionName = "Addition#4", Price= 150M, AdditionKind = "Drink" },
 			new AdditionDto { Id = Guid.NewGuid(), AdditionName = "Addition#5", Price= 25M, AdditionKind = "Salad" },
 		};
+		private readonly Additions.AdditionsClient _additionsClient;
+
+		public AdditionService(Additions.AdditionsClient additionsClient)
+		{
+			_additionsClient = additionsClient;
+		}
 
 		public async Task<Guid> AddAsync(AdditionDto additionDto)
 		{
 			await Task.CompletedTask;
 			additionDto.Id = Guid.NewGuid();
 			_additions.Add(additionDto);
-			return additionDto.Id;
+			var id = await _additionsClient.AddAdditionAsync(new Addition
+			{
+				AdditionName = additionDto.AdditionName,
+				AdditionKind = additionDto.AdditionKind,
+				Price = additionDto.Price.ToString()
+			});
+			return Guid.Parse(id.Id);
 		}
 
 		public Task DeleteAsync(Guid id)

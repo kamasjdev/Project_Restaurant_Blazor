@@ -22,11 +22,12 @@ namespace Restaurant.Infrastructure
             services.AddDatabase(configuration);
             services.AddTime();
             services.AddAuth(configuration);
-			services.AddGrpc();
+            services.AddGrpcCommunication();
             services.Configure<AppOptions>(configuration.GetRequiredSection("app"));
             services.AddCors(cors => cors.AddPolicy(CorsPolicy, options =>
             {
-                options.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod();
+                options.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod()
+                    .WithExposedHeaders("Grpc-Status", "Grpc-Message");
             }));
             return services;
         }
