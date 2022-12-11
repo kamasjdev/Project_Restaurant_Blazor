@@ -1,4 +1,5 @@
 ﻿@page "/additions"
+@using Restaurant.UI.Components.Errors
 @using Restaurant.UI.Components.LoadingIcon
 @using Restaurant.UI.Components.Modal
 @using Restaurant.UI.Components.Table
@@ -7,6 +8,7 @@
 @attribute [Authorize]
 @inject IAdditionService AdditionService;
 @inject NavigationManager NavigationManager;
+@inject ILogger<AdditionsPage> Logger;
 
 <h3>AdditionsPage</h3>
 <AuthorizeView Roles="admin">
@@ -24,6 +26,12 @@
 }
 else
 {
+    @if (string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="mb-2">
+            <ErrorComponent Text="@_error"/>
+        </div>
+    }
     <TableComponent Items="additions">
         <DataColumn TRowData="AdditionDto" Title="Id" Expression="a => a.Id" />
         <DataColumn TRowData="AdditionDto" Title="Name" Expression="a => a.AdditionName" />
@@ -54,6 +62,9 @@ else
             <div class="text-info-delete">
                 Do you wish to delete addition @AdditionToDelete?.AdditionName with id @AdditionToDelete?.Id
             </div>
+            <div class="mt-2">
+                <ErrorComponent Text="@_errorDelete" />
+            </div>
         </Body>
         <Footer>
             <button class="btn btn-danger me-2" @onclick="DeleteAddition">
@@ -74,11 +85,31 @@ else
 
     private bool Loading { get; set; } = true;
 
+    private string _error = "";
+    private string _errorDelete = "";
+
     private async Task FetchAdditions()
     {
         Loading = true;
-        await Task.Delay(2000);
-        additions = new List<AdditionDto>(await AdditionService.GetAllAsync());
+        try 
+        {
+            additions = new List<AdditionDto>(await AdditionService.GetAllAsync());
+        }
+        catch (Exception exception)
+        {
+            _error = "Something bad happen please try again later";
+
+            if (exception is RpcException)
+            {
+                var grpcException = exception as RpcException;
+                if (grpcException.Status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
+                {
+                    _error = grpcException.Status.Detail;
+                }
+            }
+
+            Logger.LogError(exception, _error);
+        }
         Loading = false;
     }
 
@@ -96,19 +127,40 @@ else
 
     private void CloseModal()
     {
+        _errorDelete = "";
+        AdditionToDelete = null;
         IsModalOpen = false;
     }
 
     private async Task DeleteAddition()
     {
+        _errorDelete = "";
         if (AdditionToDelete is null)
         {
             IsModalOpen = false;
             return;
         }
 
-        await AdditionService.DeleteAsync(AdditionToDelete.Id);
-        IsModalOpen = false;
-        await FetchAdditions();
+        try 
+        {
+            await AdditionService.DeleteAsync(AdditionToDelete.Id);
+            CloseModal();
+            await FetchAdditions();
+        }
+        catch(Exception exception)
+        {
+            _error = "Something bad happen please try again later";
+
+            if (exception is RpcException)
+            {
+                var grpcException = exception as RpcException;
+                if (grpcException.Status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
+                {
+                    _error = grpcException.Status.Detail;
+                }
+            }
+
+            Logger.LogError(exception, _error);
+        }
     }
 }

@@ -7,6 +7,7 @@
 @using Restaurant.UI.Services.Abstractions;
 @attribute [Authorize]
 @inject IAdditionService AdditionService;
+@inject ILogger<ViewAdditionPage> Logger;
 
 <h3>ViewAdditionComponent</h3>
 
@@ -16,10 +17,10 @@
 }
 else
 {
-    @if (Addition is null)
+    @if (!string.IsNullOrWhiteSpace(_error))
     {
         <div class="mt-2">
-            <ErrorComponent Text="@($"Addition with id: '{Id}' was not found")" />
+            <ErrorComponent Text="@_error" />
         </div>
     }
     else
@@ -41,11 +42,30 @@ else
     private bool Loading { get; set; } = true;
 
     private AdditionDto? Addition;
+    private string _error = "";
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        Addition = await AdditionService.GetAsync(Id);
+        try
+        {
+            Addition = await AdditionService.GetAsync(Id);
+        }
+        catch (Exception exception) 
+        {
+            _error = "Something bad happen please try again later";
+
+            if (exception is RpcException)
+            {
+                var grpcException = exception as RpcException;
+                if (grpcException.Status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
+                {
+                    _error = grpcException.Status.Detail;
+                }
+            }
+
+            Logger.LogError(exception, _error);
+        }
         Loading = false;
     }
 }

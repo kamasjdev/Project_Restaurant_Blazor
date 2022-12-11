@@ -21,8 +21,14 @@ namespace Restaurant.Infrastructure.Grpc.Services
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var additionService = scope.ServiceProvider.GetRequiredService<IAdditionService>();
-			_ = decimal.TryParse(request.Price, out var price);
-			var addition = new AdditionDto { AdditionName = request.AdditionName, Price = price, AdditionKind = request.AdditionName };
+			var priceParsed = decimal.TryParse(request.Price, out var price);
+
+			if (priceParsed is false)
+			{
+				throw new ValidationException($"Entered invalid Price {request.Price}");
+			}
+
+			var addition = new AdditionDto { AdditionName = request.AdditionName, Price = price, AdditionKind = request.AdditionKind };
 			await additionService.AddAsync(addition);
 			return new AddAdditionResponse { Id = addition.Id.ToString() };
 		}
@@ -31,8 +37,23 @@ namespace Restaurant.Infrastructure.Grpc.Services
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var additionService = scope.ServiceProvider.GetRequiredService<IAdditionService>();
-			_ = decimal.TryParse(request.Price, out var price);
-			_ = Guid.TryParse(request.Id, out var id);
+			var priceParsed = decimal.TryParse(request.Price, out var price);
+			var idParsed = Guid.TryParse(request.Id, out var id);
+
+			if (priceParsed is false || idParsed is false)
+			{
+				var messages = new List<string>();
+				if (!priceParsed)
+				{
+					messages.Add($"Entered invalid Price {request.Price}");
+				}
+				if (!idParsed)
+				{
+					messages.Add($"Entered invalid Id {request.Id}");
+				}
+				throw new ValidationException(messages);
+			}
+
 			var addition = new AdditionDto { Id = id, AdditionName = request.AdditionName, Price = price, AdditionKind = request.AdditionName };
 			await additionService.UpdateAsync(addition);
 			return new Empty();
@@ -42,7 +63,11 @@ namespace Restaurant.Infrastructure.Grpc.Services
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var additionService = scope.ServiceProvider.GetRequiredService<IAdditionService>();
-			_ = Guid.TryParse(request.Id, out var id);
+			var idParsed = Guid.TryParse(request.Id, out var id);
+			if (!idParsed)
+			{
+				throw new ValidationException($"Entered invalid Id {request.Id}");
+			}
 			await additionService.DeleteAsync(id);
 			return new Empty();
 		}
@@ -51,7 +76,12 @@ namespace Restaurant.Infrastructure.Grpc.Services
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var additionService = scope.ServiceProvider.GetRequiredService<IAdditionService>();
-			_ = Guid.TryParse(request.Id, out var id);
+			var idParsed = Guid.TryParse(request.Id, out var id);
+			if (!idParsed)
+			{
+				throw new ValidationException($"Entered invalid Id {request.Id}");
+			}
+            
 			var addition = await additionService.GetAsync(id);
 
 			if (addition is null)

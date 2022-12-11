@@ -8,6 +8,7 @@
 @using Restaurant.UI.Services.Abstractions;
 @inject NavigationManager NavigationManager;
 @inject IAdditionService AdditionService;
+@inject ILogger<EditAdditionPage> Logger;
 
 <h3>EditAdditionPage</h3>
 <AuthorizationComponent Roles="admin" />
@@ -21,7 +22,7 @@ else
     if (Addition is null)
     {
         <div class="mt-2">
-            <ErrorComponent Text="@($"Addition with id '{Id}' was not found")" />
+            <ErrorComponent Text="@_error" />
         </div>
         <div class="mt-2">
             <NavigationButtonComponent Url="/additions" Text="Back to Additions" />
@@ -29,6 +30,12 @@ else
     }
     else
     {
+        @if (!string.IsNullOrWhiteSpace(_error))
+        {
+            <div class="mt-2 mb-2">
+                <ErrorComponent Text="@_error" />
+            </div>
+        }
         <AdditionFormComponent Addition="Addition" OnSend="Send" OnCancelClickButton='() => NavigationManager.NavigateTo("/additions")' />
     }
 }
@@ -38,22 +45,61 @@ else
     public Guid Id { get; set; }
     public AdditionDto? Addition { get; set; }
     public bool Loading { get; set; } = true;
+    private string _error = "";
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        Addition = await AdditionService.GetAsync(Id);
-        await Task.Delay(1000);
+        try
+        {
+            Addition = await AdditionService.GetAsync(Id);
+        }
+        catch(Exception exception)
+        {
+            _error = "Something bad happen please try again later";
+
+            if (exception is RpcException)
+            {
+                var grpcException = exception as RpcException;
+                if (grpcException.Status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
+                {
+                    _error = grpcException.Status.Detail;
+                }
+            }
+
+            Logger.LogError(exception, _error);
+        }
         Loading = false;
     }
 
     private async Task Send(AdditionDto additionDto)
     {
+        _error = "";
         var addition = await AdditionService.GetAsync(Id);
         addition!.AdditionName = additionDto.AdditionName;
         addition!.Price = additionDto.Price;
         addition!.AdditionKind = additionDto.AdditionKind;
-        await AdditionService.UpdateAsync(additionDto);
-        NavigationManager.NavigateTo("/additions");
+
+        try
+        {
+            await AdditionService.UpdateAsync(additionDto);
+            NavigationManager.NavigateTo("/additions");
+        }
+
+        catch (Exception exception)
+        {
+            _error = "Something bad happen please try again later";
+
+            if (exception is RpcException)
+            {
+                var grpcException = exception as RpcException;
+                if (grpcException.Status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
+                {
+                    _error = grpcException.Status.Detail;
+                }
+            }
+
+            Logger.LogError(exception, _error);
+        }
     }
 }

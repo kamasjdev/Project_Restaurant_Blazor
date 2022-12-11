@@ -43,6 +43,7 @@ namespace Restaurant.Infrastructure.Grpc.Interceptors
            {
                DomainException ex => (new Error(GetErrorCode(ex), ex.Message), HttpStatusCode.BadRequest, StatusCode.FailedPrecondition),
                BusinessException ex => (new Error(GetErrorCode(ex), ex.Message), HttpStatusCode.BadRequest, StatusCode.FailedPrecondition),
+               ValidationException ex => (new Error(GetErrorCode(ex), ex.Message), HttpStatusCode.BadRequest, StatusCode.InvalidArgument),
                _ => (new Error("error", "There was an error."), HttpStatusCode.InternalServerError, StatusCode.Internal)
            };
 

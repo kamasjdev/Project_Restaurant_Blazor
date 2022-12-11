@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Restaurant.Infrastructure.Grpc.Interceptors;
 using Restaurant.Infrastructure.Grpc.Services;
 
