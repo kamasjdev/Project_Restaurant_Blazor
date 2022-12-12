@@ -40,7 +40,7 @@ namespace Restaurant.Infrastructure.Repositories
             var sql = "SELECT Id, Email, Password, Role, CreatedAt FROM users";
             _logger.LogInformation($"Infrastructure: Invoking query: {sql}");
             return (await _dbConnection.QueryAsync<UserDBO>(sql))
-               .Select(u => new User(u.Id, Email.Of(u.Email), u.Password, u.Role, u.CreatedAt));
+               .Select(u => new User(u.Id, Email.Of(u.Email), u.Password, u.Role, DateTime.SpecifyKind(u.CreatedAt, DateTimeKind.Utc)));
         }
 
         public async Task<User?> GetAsync(Guid id)
@@ -48,7 +48,7 @@ namespace Restaurant.Infrastructure.Repositories
             var sql = "SELECT Id, Email, Password, Role, CreatedAt FROM users WHERE Id = @Id";
             _logger.LogInformation($"Infrastructure: Invoking query: {sql}");
             var user = await _dbConnection.QuerySingleOrDefaultAsync<UserDBO>(sql, new { Id = id });
-            return user is not null ? new User(user.Id, Email.Of(user.Email), user.Password, user.Role, user.CreatedAt) : null;
+            return user is not null ? new User(user.Id, Email.Of(user.Email), user.Password, user.Role, DateTime.SpecifyKind(user.CreatedAt, DateTimeKind.Utc)) : null;
         }
 
         public async Task<User?> GetAsync(string email)
@@ -56,7 +56,7 @@ namespace Restaurant.Infrastructure.Repositories
             var sql = "SELECT Id, Email, Password, Role, CreatedAt FROM users WHERE Email = @Email";
             _logger.LogInformation($"Infrastructure: Invoking query: {sql}");
             var user = await _dbConnection.QuerySingleOrDefaultAsync<UserDBO>(sql, new { Email = email });
-            return user is not null ? new User(user.Id, Email.Of(user.Email), user.Password, user.Role, user.CreatedAt) : null;
+            return user is not null ? new User(user.Id, Email.Of(user.Email), user.Password, user.Role, DateTime.SpecifyKind(user.CreatedAt, DateTimeKind.Utc)) : null;
         }
 
         public Task UpdateAsync(User user)

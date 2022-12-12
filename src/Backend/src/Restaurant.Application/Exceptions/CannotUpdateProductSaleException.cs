@@ -1,6 +1,6 @@
 ﻿namespace Restaurant.Application.Exceptions
 {
-    public sealed class CannotUpdateProductSaleException : ApplicationException
+    public sealed class CannotUpdateProductSaleException : BusinessException
     {
         public Guid ProductSaleId { get; }
         public string ProductSaleState { get; }

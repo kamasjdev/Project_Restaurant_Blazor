@@ -1,5 +1,6 @@
 ﻿using Blazored.LocalStorage;
 using Restaurant.UI.DTO;
+using Restaurant.UI.Extensions;
 using Restaurant.UI.Services.Abstractions;
 
 namespace Restaurant.UI.Services.Implementation
@@ -21,10 +22,8 @@ namespace Restaurant.UI.Services.Implementation
             using var scope = _serviceProvider.CreateScope();
             var localStorageService = scope.ServiceProvider.GetRequiredService<ILocalStorageService>();
             var auth = await _userService.SignInAsync(signInDto);
-            var user = ((UserService)_userService).GetAsync(signInDto.Email);
-            var userDto = new UserDto { Id = user.Id, Email = user.Email, CreatedAt = user.CreatedAt, Role = user.Role };
-            await localStorageService.SetItemAsync(TOKEN, userDto);
-            return userDto;
+            await localStorageService.SetItemAsync(TOKEN, auth);
+            return JwtExtensions.ParseUserFromJwt(auth.AccessToken!)!;
         }
 
         public async Task SignoutAsync()
@@ -34,10 +33,9 @@ namespace Restaurant.UI.Services.Implementation
             await localStorageService.RemoveItemAsync(TOKEN);
         }
 
-        public Task SignUpAsync(SignUpDto signUpDto)
+        public async Task SignUpAsync(SignUpDto signUpDto)
         {
-            _userService.SignUpAsync(signUpDto);
-            return Task.CompletedTask;
+            await _userService.SignUpAsync(signUpDto);
         }
     }    
 }

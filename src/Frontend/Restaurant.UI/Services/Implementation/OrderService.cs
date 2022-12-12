@@ -1,93 +1,123 @@
-﻿using Restaurant.UI.DTO;
+﻿using Restaurant.Shared.OrderProto;
+using Restaurant.UI.DTO;
 using Restaurant.UI.Services.Abstractions;
-using System.Text;
 
 namespace Restaurant.UI.Services.Implementation
 {
     internal sealed class OrderService : IOrderService
     {
-        private readonly List<OrderDto> _orders = new();
-        private readonly IProductSaleService _productSaleService;
+        private readonly Orders.OrdersClient _ordersClient;
 
-        public OrderService(IProductSaleService productSaleService)
+        public OrderService(Orders.OrdersClient ordersClient)
         {
-            _productSaleService = productSaleService;
+            _ordersClient = ordersClient;
         }
 
         public async Task AddAsync(AddOrderDto addOrderDto)
         {
-            addOrderDto.Id = Guid.NewGuid();
-            var productSales = new List<ProductSaleDto>();
-
-            if (addOrderDto.ProductSaleIds is not null)
+            var request = new AddOrderRequest
             {
-                var errors = new StringBuilder("");
-
-                foreach (var productSaleId in addOrderDto.ProductSaleIds)
-                {
-                    var productSale = await _productSaleService.GetAsync(productSaleId);
-
-                    if (productSale is null)
-                    {
-                        errors.Append($"ProductSale with id '{productSaleId}' doesnt exists. ");
-                        continue;
-                    }
-
-                    productSales.Add(productSale);
-                }
-
-                if (errors.Length > 0)
-                {
-                    throw new InvalidOperationException(errors.ToString());
-                }
-            }
-
-            var order = new OrderDetailsDto
-            {
-                Id = addOrderDto.Id,
+                Id = addOrderDto.Id.ToString(),
                 Email = addOrderDto.Email,
-                Created = DateTime.UtcNow,
-                OrderNumber = Guid.NewGuid().ToString("N"),
-                Note = addOrderDto.Note,
-                Price = productSales.Sum(ps => ps.EndPrice),
-                Products = productSales
             };
-            _orders.Add(order);
-            productSales.ForEach(ps => ps.Order = order);
+            if (!string.IsNullOrWhiteSpace(addOrderDto.Note))
+            {
+                request.Note = addOrderDto.Note;
+            }
+            request.ProductSaleIds.AddRange(addOrderDto.ProductSaleIds?.Select(ps =>
+                    new ProductSaleId { Id = ps.ToString() }));
+            await _ordersClient.AddOrderAsync(request);
         }
 
-        public Task DeleteAsync(Guid id)
+        public async Task DeleteAsync(Guid id)
         {
-            var orderExists = _orders.SingleOrDefault(o => o.Id == id);
-
-            if (orderExists is null)
+            await _ordersClient.DeleteOrderWithPositionsAsync(new DeleteOrderWithPositionsRequest
             {
-                throw new InvalidOperationException($"Order with id: '{id}' doesnt exits");
-            }
-
-            _orders.Remove(orderExists);
-            return Task.CompletedTask;
+                Id = id.ToString()
+            });
         }
 
         public async Task<IEnumerable<OrderDto>> GetAllAsync()
         {
-            await Task.CompletedTask;
-            return _orders;
+            return (await _ordersClient.GetOrdersAsync(new Google.Protobuf.WellKnownTypes.Empty()))
+                .Orders.Select(o => new OrderDto
+                {
+                    Id = Guid.Parse(o.Id),
+                    OrderNumber = o.OrderNumber,
+                    Price = decimal.Parse(o.Price),
+                    Email = o.Email,
+                    Note = o.Note,
+                    Created = o.Created.ToDateTime(),
+                });
         }
 
-        public Task<IEnumerable<OrderDto>> GetAllByEmailAsync(string email)
+        public async Task<IEnumerable<OrderDto>> GetAllByEmailAsync(string email)
         {
-            return Task.FromResult(_orders.Where(o => o.Email == email));
+            return (await _ordersClient.GetOrdersAsync(new Google.Protobuf.WellKnownTypes.Empty()))
+                .Orders.Select(o => new OrderDto
+                {
+                    Id = Guid.Parse(o.Id),
+                    OrderNumber = o.OrderNumber,
+                    Price = decimal.Parse(o.Price),
+                    Email = o.Email,
+                    Note = o.Note,
+                    Created = o.Created.ToDateTime(),
+                });
         }
 
-        public Task<OrderDetailsDto?> GetAsync(Guid id)
+        public async Task<OrderDetailsDto?> GetAsync(Guid id)
         {
-            return Task.FromResult((OrderDetailsDto?)_orders.SingleOrDefault(o => o.Id == id));
+            var response = await _ordersClient.GetOrderAsync(new GetOrderRequest
+            {
+                Id = id.ToString()
+            });
+            return response is not null ?
+                new OrderDetailsDto
+                {
+                    Id = Guid.Parse(response.Id),
+                    Email = response.Email,
+                    Note = response.Note,
+                    OrderNumber = response.OrderNumber,
+                    Created = response.Created.ToDateTime(),
+                    Price = decimal.Parse(response.Price),
+                    Products = response.Products.Select(p => new ProductSaleDto
+                    {
+                        Id = Guid.Parse(p.Id),
+                        Email = p.Email,
+                        ProductSaleState = p.ProductSaleState,
+                        EndPrice = decimal.Parse(p.EndPrice),
+                        Addition = p.Addition is not null ?
+                                new AdditionDto
+                                {
+                                    Id = Guid.Parse(p.Addition.Id),
+                                    AdditionKind = p.Addition.AdditionKind,
+                                    AdditionName = p.Addition.AdditionName,
+                                    Price = decimal.Parse(p.Addition.Price)
+                                } : null,
+                        Product = new ProductDto
+                        {
+                            Id = Guid.Parse(p.Product.Id),
+                            Price = decimal.Parse(p.Product.Price),
+                            ProductKind = p.Product.ProductKind,
+                            ProductName = p.Product.ProductName
+                        }
+                    })
+                } : null;
         }
 
-        public Task UpdateAsync(AddOrderDto addOrderDto)
+        public async Task UpdateAsync(AddOrderDto addOrderDto)
         {
-            return Task.CompletedTask;
+            var request = new AddOrderRequest
+            {
+                Id = addOrderDto.Id.ToString(),
+                Email = addOrderDto.Email
+            };
+            if (!string.IsNullOrWhiteSpace(addOrderDto.Note))
+            {
+                request.Note = addOrderDto.Note;
+            }
+            request.ProductSaleIds.AddRange(addOrderDto.ProductSaleIds?.Select(ps => new ProductSaleId { Id = ps.ToString() }));
+            await _ordersClient.UpdateOrderAsync(request);
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Restaurant.Application.Exceptions
 {
-    public sealed class EmailAlreadyInUseException : ApplicationException
+    public sealed class EmailAlreadyInUseException : BusinessException
     {
         public string Email { get; }
 

@@ -15,7 +15,7 @@ namespace Restaurant.Migrations
             Create.Table("users")
                 .WithColumn("Id").AsGuid().PrimaryKey()
                 .WithColumn("Email").AsString(5000).NotNullable().Unique("uidx_users_email")
-                .WithColumn("Password").AsString(50).NotNullable()
+                .WithColumn("Password").AsString(1000).NotNullable()
                 .WithColumn("Role").AsString(50).NotNullable().Indexed("idx_users_role")
                 .WithColumn("CreatedAt").AsDateTime().NotNullable().Indexed("idx_users_created_at");
         }

@@ -29,7 +29,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
-			await userService.SignUpAsync(new SignUpDto(request.Password, request.Password, request.Role));
+			await userService.SignUpAsync(new SignUpDto(request.Email, request.Password, request.Role));
 			return new Empty();
 		}
 

@@ -41,7 +41,7 @@ namespace Restaurant.Infrastructure.Repositories
                     continue;
                 }
 
-                var order = new Order(productSaleData.Order.Id, productSaleData.Order.OrderNumber, productSaleData.Order.Created, productSaleData.Order.Price, Email.Of(productSaleData.Order.Email), productSaleData.Order.Note);
+                var order = new Order(productSaleData.Order.Id, productSaleData.Order.OrderNumber, DateTime.SpecifyKind(productSaleData.Order.Created, DateTimeKind.Utc), productSaleData.Order.Price, Email.Of(productSaleData.Order.Email), productSaleData.Order.Note);
                 order.AddProduct(productSale);
                 orders.Add(order);
             }
@@ -57,7 +57,7 @@ namespace Restaurant.Infrastructure.Repositories
             ProductSale productSale = new(productSaleData.Id, product, productSaleData.ProductSaleState, Email.Of(productSaleData.Email), addition);
             
             if (productSaleData.Order is not null) {
-                _ = new Order(productSaleData.Order.Id, productSaleData.Order.OrderNumber, productSaleData.Order.Created, productSaleData.Order.Price, Email.Of(productSaleData.Order.Email), productSaleData.Order.Note, new List<ProductSale> { productSale });
+                _ = new Order(productSaleData.Order.Id, productSaleData.Order.OrderNumber, DateTime.SpecifyKind(productSaleData.Order.Created, DateTimeKind.Utc), productSaleData.Order.Price, Email.Of(productSaleData.Order.Email), productSaleData.Order.Note, new List<ProductSale> { productSale });
             }
 
             return productSale;
@@ -68,9 +68,8 @@ namespace Restaurant.Infrastructure.Repositories
             var productSales = new List<ProductSale>();
             var productSaleIds = new List<EntityId>();
             var productSalesProperty = typeof(Product).GetField("_productSaleIds", BindingFlags.NonPublic | BindingFlags.Instance);
-            var ordersProperty = typeof(Product).GetField("_orders", BindingFlags.NonPublic | BindingFlags.Instance);
             var additionProductSalesProperty = typeof(Addition).GetField("_productSaleIds", BindingFlags.NonPublic | BindingFlags.Instance);
-            var order = new Order(orderData.Id, orderData.OrderNumber, orderData.Created, orderData.Price, Email.Of(orderData.Email), orderData.Note, productSales);
+            var order = new Order(orderData.Id, orderData.OrderNumber, DateTime.SpecifyKind(orderData.Created, DateTimeKind.Utc), orderData.Price, Email.Of(orderData.Email), orderData.Note, productSales);
             var productsProperty = typeof(Order).GetField("_products", BindingFlags.NonPublic | BindingFlags.Instance);
             productsProperty?.SetValue(order, productSales);
 

@@ -1,6 +1,6 @@
 ﻿namespace Restaurant.Application.Exceptions
 {
-    public sealed class UserNotFoundException : ApplicationException
+    public sealed class UserNotFoundException : BusinessException
     {
         public Guid UserId { get; }
 

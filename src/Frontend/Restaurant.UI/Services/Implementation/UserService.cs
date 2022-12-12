@@ -1,131 +1,113 @@
-﻿using Restaurant.UI.DTO;
+﻿using Restaurant.Shared.UserProto;
+using Restaurant.UI.DTO;
 using Restaurant.UI.Services.Abstractions;
 
 namespace Restaurant.UI.Services.Implementation
 {
     internal sealed class UserService : IUserService
     {
-        private readonly IList<User> _users = new List<User>
-        {
-            new User { Id = Guid.NewGuid(), Email = "admin@admin.com", Password = "NaChilku123!", CreatedAt = new DateTime(2022, 12, 5, 18, 45, 30), Role = "admin" },
-            new User { Id = Guid.NewGuid(), Email = "user@user.com", Password = "NieZgadnies123!", CreatedAt = new DateTime(2022, 12, 5, 18, 45, 30), Role = "user" }
-        };
+        private readonly Users.UsersClient _usersClient;
 
-        public Task ChangeEmailAsync(ChangeEmailDto changeEmailDto)
+        public UserService(Users.UsersClient usersClient)
         {
-            var user = _users.SingleOrDefault(u => u.Id == changeEmailDto.UserId);
-            
-            if (user is null)
-            {
-                throw new InvalidOperationException($"User with id: '{changeEmailDto.UserId}' was not found");
-            }
-
-            user.Email = changeEmailDto.Email;
-            return Task.CompletedTask;
+            _usersClient = usersClient;
         }
 
-        public Task ChangePasswordAsync(ChangePasswordDto changePasswordDto)
+        public async Task ChangeEmailAsync(ChangeEmailDto changeEmailDto)
         {
-            var user = _users.SingleOrDefault(u => u.Id == changePasswordDto.UserId);
-
-            if (user is null)
+            await _usersClient.ChangeUserEmailAsync(new ChangeUserEmailRequest
             {
-                throw new InvalidOperationException($"User with id: '{changePasswordDto.UserId}' was not found");
-            }
-
-            user.Password = changePasswordDto.Password;
-            return Task.CompletedTask;
-        }
-
-        public Task<IEnumerable<UserDto>> GetAllAsync()
-        {
-            return Task.FromResult(_users.Select(u => new UserDto
-            {
-                Id = u.Id,
-                Email = u.Email,
-                Role = u.Role,
-                CreatedAt = u.CreatedAt
-            }));
-        }
-
-        public Task<UserDto?> GetAsync(Guid id)
-        {
-            var user = _users.SingleOrDefault(u => u.Id == id);
-            return Task.FromResult(user is not null ?
-                new UserDto { Id = user.Id, Email = user.Email, CreatedAt = user.CreatedAt, Role = user.Role }
-                : null);
-        }
-
-        public Task<AuthDto> SignInAsync(SignInDto signInDto)
-        {
-            var user = _users.SingleOrDefault(u => u.Email == signInDto.Email);
-
-            if (user is null)
-            {
-                throw new InvalidOperationException("Invalid Credentials");
-            }
-
-            if (!string.Equals(user.Password, signInDto.Password, StringComparison.InvariantCultureIgnoreCase))
-            {
-                throw new InvalidOperationException("Invalid Credentials");
-            }
-
-            return Task.FromResult(new AuthDto { AccessToken = "token" });
-        }
-
-        public Task SignUpAsync(SignUpDto signUpDto)
-        {
-            _users.Add(new User
-            {
-                Id = Guid.NewGuid(),
-                Email = signUpDto.Email,
-                Password = signUpDto.Password,
-                CreatedAt = DateTime.UtcNow,
-                Role = string.IsNullOrWhiteSpace(signUpDto.Role) ? "user" : signUpDto.Role
+                UserId = changeEmailDto.UserId.ToString(),
+                Email = changeEmailDto.Email
             });
-            return Task.CompletedTask;
         }
 
-        public Task UpdateAsync(UpdateUserDto updateUserDto)
+        public async Task ChangePasswordAsync(ChangePasswordDto changePasswordDto)
         {
-            return Task.CompletedTask;
-        }
-
-        public Task UpdateRoleAsync(UpdateRoleDto updateRoleDto)
-        {
-            var user = _users.SingleOrDefault(u => u.Id == updateRoleDto.UserId);
-
-            if (user is null)
+            await _usersClient.ChangeUserPasswordAsync(new ChangeUserPasswordRequest
             {
-                throw new InvalidOperationException($"User with id: '{updateRoleDto.UserId}' was not found");
-            }
-
-            user.Role = updateRoleDto.Role;
-            return Task.CompletedTask;
+                UserId = changePasswordDto.UserId.ToString(),
+                Password = changePasswordDto.Password,
+                NewPassword = changePasswordDto.NewPassword,
+                NewPasswordConfirm = changePasswordDto.NewPasswordConfirm
+            });
         }
 
-        public User? GetAsync(string email) => _users.SingleOrDefault(u => u.Email == email);
-
-        public Task DeleteAsync(Guid id)
+        public async Task<IEnumerable<UserDto>> GetAllAsync()
         {
-            var user = _users.SingleOrDefault(u => u.Id == id);
+            return (await _usersClient.GetUsersAsync(new Google.Protobuf.WellKnownTypes.Empty()))
+                .Users.Select(u => new UserDto
+                {
+                    Id = Guid.Parse(u.Id),
+                    Email = u.Email,
+                    Role = u.Role,
+                    CreatedAt = u.CreatedAt.ToDateTime()
+                });
+        }
 
-            if (user is null)
+        public async Task<UserDto?> GetAsync(Guid id)
+        {
+            var user = await _usersClient.GetUserAsync(new GetUserRequest
             {
-                throw new InvalidOperationException($"User with id: '{id}' was not found");
-            }
-
-            _users.Remove(user);
-            return Task.CompletedTask;
+                Id = id.ToString()
+            });
+            return user is not null ? new UserDto
+            {
+                Id = Guid.Parse(user.Id),
+                Email = user.Email,
+                Role = user.Role,
+                CreatedAt = user.CreatedAt.ToDateTime()
+            } : null;
         }
 
-        internal class User
+        public async Task<AuthDto> SignInAsync(SignInDto signInDto)
         {
-            public Guid Id { get; set; }
-            public string? Email { get; set; }
-            public string? Role { get; set; }
-            public DateTime CreatedAt { get; set; }
-            public string? Password { get; set; }
+            var auth = await _usersClient.SignInAsync(new SignInRequest
+            {
+                Email = signInDto.Email,
+                Password = signInDto.Password
+            });
+            return new AuthDto { AccessToken = auth.AccessToken };
+        }
+
+        public async Task SignUpAsync(SignUpDto signUpDto)
+        {
+            var request = new SignUpRequest
+            {
+                Email = signUpDto.Email,
+                Password = signUpDto.Password
+            };
+            if (!string.IsNullOrWhiteSpace(signUpDto.Role))
+            {
+                request.Role = signUpDto.Role;
+            }
+            await _usersClient.SignUpAsync(request);
+        }
+
+        public async Task UpdateAsync(UpdateUserDto updateUserDto)
+        {
+            await _usersClient.UpdateUserAsync(new UpdateUserRequest
+            {
+                UserId = updateUserDto.UserId.ToString(),
+                Email = updateUserDto.Email,
+                Password = updateUserDto.Password,
+                Role = updateUserDto.Role
+            });
+        }
+
+        public async Task UpdateRoleAsync(UpdateRoleDto updateRoleDto)
+        {
+            await _usersClient.UpdateUserRoleAsync(new UpdateUserRoleRequest
+            {
+                UserId = updateRoleDto.UserId.ToString(),
+                Role = updateRoleDto.Role
+            });
+        }
+
+        public async Task DeleteAsync(Guid id)
+        {
+            // TODO: _usersClient.DeleteUserAsync(id)
+            return;
         }
     }
 }

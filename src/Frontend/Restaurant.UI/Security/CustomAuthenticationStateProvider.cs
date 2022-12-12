@@ -1,6 +1,7 @@
 ﻿using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using Restaurant.UI.DTO;
+using Restaurant.UI.Extensions;
 using System.Security.Claims;
 
 namespace Restaurant.UI.Security
@@ -10,6 +11,7 @@ namespace Restaurant.UI.Security
         private readonly ILocalStorageService _localStorage;
         private readonly ClaimsPrincipal _annonymous = new ClaimsPrincipal(new ClaimsIdentity());
         private const string AUTH = "JwTAuth";
+        private const string TOKEN = "token";
 
         public CustomAuthenticationStateProvider(ILocalStorageService localStorage)
         {
@@ -18,15 +20,22 @@ namespace Restaurant.UI.Security
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            var token = await _localStorage.GetItemAsync<UserDto>("token");
-
+            var token = await _localStorage.GetItemAsync<AuthDto>(TOKEN);
+            
             if (token is null)
             {
                 return new AuthenticationState(_annonymous);
             }
 
+            var user = JwtExtensions.ParseUserFromJwt(token.AccessToken);
+
+            if (user is null)
+            {
+                return new AuthenticationState(_annonymous);
+            }
+
             return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
-                { new Claim("id", token.Id.ToString()), new Claim("email", token.Email), new Claim(ClaimTypes.Role, token.Role) }
+                { new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), new Claim(ClaimTypes.Email, user.Email), new Claim(ClaimTypes.Role, user.Role) }
             , authenticationType: AUTH))); // need to specify authenticate type, if not specified user will be annonymous
         }
 
@@ -41,7 +50,7 @@ namespace Restaurant.UI.Security
             }
 
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
-                { new Claim("id", userDto.Id.ToString()), new Claim("email", userDto.Email), new Claim("role", userDto.Role) }
+                { new Claim(ClaimTypes.NameIdentifier, userDto.Id.ToString()), new Claim(ClaimTypes.Email, userDto.Email), new Claim(ClaimTypes.Role, userDto.Role) }
             , authenticationType: AUTH)))));
         }
     }

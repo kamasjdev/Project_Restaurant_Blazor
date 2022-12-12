@@ -34,6 +34,8 @@ namespace Restaurant.Infrastructure.Security
             {
                 new(JwtRegisteredClaimNames.Sub, userId.ToString()),
                 new(JwtRegisteredClaimNames.UniqueName, userId.ToString()),
+                new(ClaimTypes.NameIdentifier, userId.ToString()),
+                new(ClaimTypes.Email, userId.ToString()),
                 new(ClaimTypes.Role, role)
             };
 

@@ -1,6 +1,6 @@
 ﻿namespace Restaurant.Application.Exceptions
 {
-    public sealed class CannotDeleteProductOrderedException : ApplicationException
+    public sealed class CannotDeleteProductOrderedException : BusinessException
     {
         public Guid ProductId { get; }
 

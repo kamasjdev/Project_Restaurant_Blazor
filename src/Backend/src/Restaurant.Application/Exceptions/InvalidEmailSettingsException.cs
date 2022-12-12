@@ -2,7 +2,7 @@
 
 namespace Restaurant.Application.Exceptions
 {
-    public sealed class InvalidEmailSettingsException : ApplicationException
+    public sealed class InvalidEmailSettingsException : BusinessException
     {
         public InvalidEmailSettings InvalidEmailSettings { get; }
 

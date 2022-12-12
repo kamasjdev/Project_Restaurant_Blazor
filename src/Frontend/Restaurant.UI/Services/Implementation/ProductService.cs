@@ -1,52 +1,71 @@
-﻿using Restaurant.UI.DTO;
+﻿using Restaurant.Shared.ProductProto;
+using Restaurant.UI.DTO;
 using Restaurant.UI.Services.Abstractions;
 
 namespace Restaurant.UI.Services.Implementation
 {
     internal sealed class ProductService : IProductService
     {
-        private readonly List<ProductDto> _products = new()
-        {
-            new ProductDto { Id = Guid.NewGuid(), ProductName = "Product#1", Price= 100M, ProductKind = "MainDish" },
-            new ProductDto { Id = Guid.NewGuid(), ProductName = "Product#2", Price= 50M, ProductKind = "Soup" },
-            new ProductDto { Id = Guid.NewGuid(), ProductName = "Product#3", Price= 20M, ProductKind = "Pizza" },
-            new ProductDto { Id = Guid.NewGuid(), ProductName = "Product#4", Price= 150M, ProductKind = "MainDish" },
-            new ProductDto { Id = Guid.NewGuid(), ProductName = "Product#5", Price= 25M, ProductKind = "Pizza" },
-        };
+        private readonly Products.ProductsClient _productsClient;
 
-        public Task<Guid> AddAsync(ProductDto productDto)
+        public ProductService(Products.ProductsClient productsClient)
         {
-            productDto.Id = Guid.NewGuid();
-            _products.Add(productDto);
-            return Task.FromResult(productDto.Id);
+            _productsClient = productsClient;
         }
 
-        public Task DeleteAsync(Guid id)
+        public async Task<Guid> AddAsync(ProductDto productDto)
         {
-            var product = _products.SingleOrDefault(p => p.Id == id);
-
-            if (product is null)
+            var response = await _productsClient.AddProductAsync(new Product
             {
-                return Task.CompletedTask;
-            }
-
-            _products.Remove(product);
-            return Task.CompletedTask;
+                Id = productDto.Id.ToString(),
+                Price = productDto.Price.ToString(),
+                ProductKind = productDto.ProductKind,
+                ProductName = productDto.ProductName
+            });
+            return Guid.Parse(response.Id);
         }
 
-        public Task<IEnumerable<ProductDto>> GetAllAsync()
+        public async Task DeleteAsync(Guid id)
         {
-            return Task.FromResult<IEnumerable<ProductDto>>(_products);
+            await _productsClient.DeleteProductAsync(new DeleteProductRequest { Id = id.ToString() });
         }
 
-        public Task<ProductDto?> GetAsync(Guid id)
+        public async Task<IEnumerable<ProductDto>> GetAllAsync()
         {
-            return Task.FromResult(_products.SingleOrDefault(p => p.Id == id));
+            return (await _productsClient.GetProductsAsync(new Google.Protobuf.WellKnownTypes.Empty()))
+                .Products.Select(p => new ProductDto
+                {
+                    Id = Guid.Parse(p.Id),
+                    ProductName = p.ProductName,
+                    Price = decimal.Parse(p.Price),
+                    ProductKind = p.ProductKind
+                });
         }
 
-        public Task UpdateAsync(ProductDto productDto)
+        public async Task<ProductDto?> GetAsync(Guid id)
         {
-            return Task.CompletedTask;
+            var product = await _productsClient.GetProductAsync(new GetProductRequest
+            {
+                Id = id.ToString()
+            });
+            return product is not null ? new ProductDto
+            {
+                Id = Guid.Parse(product.Id),
+                ProductKind = product.ProductKind,
+                ProductName = product.ProductName,
+                Price = decimal.Parse(product.Price)
+            } : null;
+        }
+
+        public async Task UpdateAsync(ProductDto productDto)
+        {
+            await _productsClient.UpdateProductAsync(new Product
+            {
+                Id = productDto.Id.ToString(),
+                Price = productDto.Price.ToString(),
+                ProductKind = productDto.ProductKind,
+                ProductName = productDto.ProductName,
+            });
         }
     }
 }
