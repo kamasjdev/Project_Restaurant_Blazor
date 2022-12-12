@@ -37,6 +37,13 @@ namespace Restaurant.Infrastructure.Repositories
             return _dbConnection.ExecuteAsync(sql, new { Id = productSale.Id.Value });
         }
 
+        public Task DeleteByOrderAsync(Guid orderId)
+        {
+            var sql = "DELETE FROM product_sales WHERE OrderId = @OrderId";
+            _logger.LogInformation($"Infrastructure: Invoking query: {sql}");
+            return _dbConnection.ExecuteAsync(sql, new { OrderId = orderId });
+        }
+
         public async Task<IEnumerable<ProductSale>> GetAllAsync()
         {
             var sql = "SELECT Id, ProductId, OrderId, AdditionId, EndPrice, Email, ProductSaleState FROM product_sales";

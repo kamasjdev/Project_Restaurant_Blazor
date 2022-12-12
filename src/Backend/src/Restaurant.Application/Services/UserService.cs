@@ -81,6 +81,18 @@ namespace Restaurant.Application.Services
             await _userRepository.UpdateAsync(user);
         }
 
+        public async Task DeleteAsync(Guid userId)
+        {
+            var user = await _userRepository.GetAsync(userId);
+
+            if (user is null)
+            {
+                throw new UserNotFoundException(userId);
+            }
+
+            await _userRepository.DeleteAsync(user);
+        }
+
         public async Task<IEnumerable<UserDto>> GetAllAsync()
         {
             return (await _userRepository.GetAllAsync()).Select(u => u.AsDto());

@@ -106,8 +106,10 @@ namespace Restaurant.UI.Services.Implementation
 
         public async Task DeleteAsync(Guid id)
         {
-            // TODO: _usersClient.DeleteUserAsync(id)
-            return;
+            await _usersClient.DeleteUserAsync(new DeleteUserRequest
+            {
+                UserId = id.ToString()
+            });
         }
     }
 }

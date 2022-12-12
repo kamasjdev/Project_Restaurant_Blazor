@@ -6,7 +6,7 @@ import "google/protobuf/timestamp.proto";
 
 service ProductSales { 
 	rpc GetProductSale (GetProductSaleRequest) returns (ProductSale);
-	rpc GetProductSalesByEmail (GetProductSalesByEmailRequest) returns (GetProductSalesByEmailResponse);
+	rpc GetProductSalesInCartByEmail (GetProductSalesByEmailRequest) returns (GetProductSalesByEmailResponse);
 	rpc GetProductSalesByOrderId (GetProductSalesByOrderIdRequest) returns (GetProductSalesByOrderIdResponse);
 	rpc UpdateProduct (AddProductSaleRequest) returns (google.protobuf.Empty);
 	rpc AddProduct (AddProductSaleRequest) returns (AddProductSaleResponse);

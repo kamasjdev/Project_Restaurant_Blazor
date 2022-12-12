@@ -11,5 +11,6 @@ namespace Restaurant.Core.Repositories
         Task<IEnumerable<ProductSale>> GetAllAsync();
         Task<IEnumerable<ProductSale>> GetAllByOrderIdAsync(Guid orderId);
         Task<IEnumerable<ProductSale>> GetAllInCartByEmailAsync(string email);
+        Task DeleteByOrderAsync(Guid orderId);
     }
 }

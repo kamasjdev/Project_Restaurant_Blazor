@@ -13,6 +13,7 @@ service Users {
 	rpc ChangeUserEmail (ChangeUserEmailRequest) returns (google.protobuf.Empty);
 	rpc ChangeUserPassword (ChangeUserPasswordRequest) returns (google.protobuf.Empty);
 	rpc UpdateUserRole (UpdateUserRoleRequest) returns (google.protobuf.Empty);
+	rpc DeleteUser (DeleteUserRequest) returns (google.protobuf.Empty);
 } 
 
 message SignInRequest {
@@ -67,4 +68,8 @@ message ChangeUserPasswordRequest {
 message UpdateUserRoleRequest {
 	string userId = 1;
 	string Role = 2;
+}
+
+message DeleteUserRequest {
+	string userId = 1;
 }

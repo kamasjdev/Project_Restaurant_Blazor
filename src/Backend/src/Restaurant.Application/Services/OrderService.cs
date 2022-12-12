@@ -112,12 +112,7 @@ namespace Restaurant.Application.Services
             try
             {
                 await _orderRepository.DeleteAsync(order);
-
-                foreach (var product in order.Products)
-                {
-                    await _productSaleRepository.DeleteAsync(product);
-                }
-
+                await _productSaleRepository.DeleteByOrderAsync(id);
                 await _unitOfWork.CommitAsync();
             }
             catch

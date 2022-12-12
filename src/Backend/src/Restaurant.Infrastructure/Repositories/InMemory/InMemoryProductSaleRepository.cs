@@ -19,6 +19,12 @@ namespace Restaurant.Infrastructure.Repositories.InMemory
             return Task.CompletedTask;
         }
 
+        public Task DeleteByOrderAsync(Guid orderId)
+        {
+            _productSales.RemoveAll(ps => ps.OrderId is not null && ps.OrderId == orderId);
+            return Task.CompletedTask;
+        }
+
         public async Task<IEnumerable<ProductSale>> GetAllAsync()
         {
             await Task.CompletedTask;

@@ -105,5 +105,14 @@ namespace Restaurant.Infrastructure.Grpc.Services
 			await userService.ChangePasswordAsync(new ChangePasswordDto(userId, request.Password, request.NewPassword, request.NewPasswordConfirm));
 			return new Empty();
 		}
-	}
+
+        public override async Task<Empty> DeleteUser(DeleteUserRequest request, ServerCallContext context)
+        {
+            using var scope = _serviceProvider.CreateScope();
+            var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+            var userId = request.UserId.AsGuid();
+            await userService.DeleteAsync(userId);
+            return new Empty();
+        }
+    }
 }

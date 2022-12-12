@@ -69,7 +69,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 			};
 		}
 
-		public override async Task<GetProductSalesByEmailResponse> GetProductSalesByEmail(GetProductSalesByEmailRequest request, ServerCallContext context)
+		public override async Task<GetProductSalesByEmailResponse> GetProductSalesInCartByEmail(GetProductSalesByEmailRequest request, ServerCallContext context)
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var productSaleService = scope.ServiceProvider.GetRequiredService<IProductSaleService>();
