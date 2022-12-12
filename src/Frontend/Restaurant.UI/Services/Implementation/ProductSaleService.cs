@@ -46,6 +46,7 @@ namespace Restaurant.UI.Services.Implementation
 
         public async Task<IEnumerable<ProductSaleDto>> GetAllInCartByEmailAsync(string email)
         {
+            // TODO: QUery
             return (await _productSalesClient.GetProductSalesByEmailAsync(new GetProductSalesByEmailRequest { Email = email }))
                 .ProductSales.Select(ps => new ProductSaleDto
                 {

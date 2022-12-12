@@ -1,7 +1,6 @@
 ﻿using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using Restaurant.UI.DTO;
-using Restaurant.UI.Extensions;
 using System.Security.Claims;
 
 namespace Restaurant.UI.Security

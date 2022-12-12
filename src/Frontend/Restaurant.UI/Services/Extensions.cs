@@ -7,12 +7,12 @@ namespace Restaurant.UI.Services
 	{
 		public static IServiceCollection AddServices(this IServiceCollection services)
 		{
-			services.AddSingleton<IAdditionService, AdditionService>();
-			services.AddSingleton<IProductService, ProductService>();
-			services.AddSingleton<IAuthenticationService, AuthenticationService>();
-			services.AddSingleton<IProductSaleService, ProductSaleService>();
-			services.AddSingleton<IOrderService, OrderService>();
-			services.AddSingleton<IUserService, UserService>();
+			services.AddScoped<IAdditionService, AdditionService>();
+			services.AddScoped<IProductService, ProductService>();
+			services.AddScoped<IAuthenticationService, AuthenticationService>();
+			services.AddScoped<IProductSaleService, ProductSaleService>();
+			services.AddScoped<IOrderService, OrderService>();
+			services.AddScoped<IUserService, UserService>();
 			return services;
 		}
 	}

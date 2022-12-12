@@ -2,7 +2,7 @@
 using System.Security.Claims;
 using System.Text.Json;
 
-namespace Restaurant.UI.Extensions
+namespace Restaurant.UI.Security
 {
     public static class JwtExtensions
     {
@@ -18,7 +18,7 @@ namespace Restaurant.UI.Extensions
             var keyValuePairs = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonBytes) ?? new Dictionary<string, object>();
 
             var user = new UserDto();
-            foreach(var kvp in keyValuePairs)
+            foreach (var kvp in keyValuePairs)
             {
                 if (kvp.Key == "sub")
                 {
