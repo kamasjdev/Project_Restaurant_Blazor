@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Restaurant.Application.Abstractions;
 using Restaurant.Application.DTO;
@@ -8,6 +9,7 @@ using Restaurant.Shared.UserProto;
 
 namespace Restaurant.Infrastructure.Grpc.Services
 {
+	[Authorize(Roles = "admin")]
 	internal sealed class UserGrpcService : Users.UsersBase
 	{
 		private readonly IServiceProvider _serviceProvider;
@@ -17,6 +19,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 			_serviceProvider = serviceProvider;
 		}
 
+		[AllowAnonymous]
 		public override async Task<SignInResponse> SignIn(SignInRequest request, ServerCallContext context)
 		{
 			using var scope = _serviceProvider.CreateScope();
@@ -25,6 +28,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 			return new SignInResponse { AccessToken = auth.AccessToken };
 		}
 
+		[AllowAnonymous]
 		public override async Task<Empty> SignUp(SignUpRequest request, ServerCallContext context)
 		{
 			using var scope = _serviceProvider.CreateScope();

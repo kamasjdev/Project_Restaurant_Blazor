@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Restaurant.Application.Abstractions;
 using Restaurant.Application.Exceptions;
@@ -7,6 +8,7 @@ using Restaurant.Shared.OrderProto;
 
 namespace Restaurant.Infrastructure.Grpc.Services
 {
+	[Authorize]
 	internal class OrderGrpcService : Orders.OrdersBase
 	{
 		private readonly IServiceProvider _serviceProvider;
