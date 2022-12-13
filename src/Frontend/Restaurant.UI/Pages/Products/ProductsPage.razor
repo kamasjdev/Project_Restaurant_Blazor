@@ -1,4 +1,5 @@
 ﻿@page "/products"
+@using Restaurant.UI.Components.Errors
 @using Restaurant.UI.Components.LoadingIcon
 @using Restaurant.UI.Components.Modal
 @using Restaurant.UI.Components.Table
@@ -7,6 +8,7 @@
 @attribute [Authorize]
 @inject IProductService ProductService;
 @inject NavigationManager NavigationManager;
+@inject ILogger<ProductsPage> Logger;
 
 <h3>ProductsPage</h3>
 
@@ -24,6 +26,11 @@
 }
 else
 {
+    
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+	    <ErrorComponent Text="@_error" />
+    }
     <TableComponent Items="products">
         <DataColumn TRowData="ProductDto" Title="Id" Expression="p => p.Id" />
         <DataColumn TRowData="ProductDto" Title="Name" Expression="p => p.ProductName" />
@@ -54,6 +61,10 @@ else
             <div class="text-info-delete">
                 Do you wish to delete addition @ProductToDelete?.ProductName with id @ProductToDelete?.Id
             </div>
+            @if (!string.IsNullOrWhiteSpace(_errorDeleteRequest))
+            {
+                <ErrorComponent Text="@_errorDeleteRequest" />
+            }
         </Body>
         <Footer>
             <button class="btn btn-danger me-2" @onclick="DeleteProduct">
@@ -69,6 +80,8 @@ else
 @code {
     private ICollection<ProductDto>? products;
     private ProductDto? ProductToDelete;
+    private string _error = "";
+    private string _errorDeleteRequest = "";
 
     private bool IsModalOpen { get; set; } = false;
     private bool Loading { get; set; }
@@ -76,8 +89,28 @@ else
     private async Task FetchProducts()
     {
         Loading = true;
-        await Task.Delay(2000);
-        products = new List<ProductDto>(await ProductService.GetAllAsync());
+        try
+        {   
+            products = new List<ProductDto>(await ProductService.GetAllAsync());
+        }
+        catch (Exception exception)
+        {
+            if (exception is RpcException)
+            {
+                var status = ((RpcException)exception).Status;
+
+                if (status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
+                {
+                    _error = status.Detail;
+                }
+                else
+                {
+                    _error = "Something bad happen please try again later";
+                }
+            }
+
+            Logger.LogError(exception, exception.Message);
+        }
         Loading = false;
     }
 
@@ -91,23 +124,42 @@ else
     {
         IsModalOpen = true;
         ProductToDelete = productDto;
+        _errorDeleteRequest = "";
     }
 
     private void CloseModal()
     {
         IsModalOpen = false;
+        _errorDeleteRequest = "";
+        ProductToDelete = null;
     }
 
     private async Task DeleteProduct()
     {
-        if (ProductToDelete is null)
+        try
         {
-            IsModalOpen = false;
-            return;
+            _errorDeleteRequest = "";
+            await ProductService.DeleteAsync(ProductToDelete.Id);
+            CloseModal();
+            await FetchProducts();
         }
+        catch (Exception exception)
+        {
+            if (exception is RpcException)
+            {
+                var status = ((RpcException)exception).Status;
 
-        await ProductService.DeleteAsync(ProductToDelete.Id);
-        IsModalOpen = false;
-        await FetchProducts();
+                if (status.StatusCode is StatusCode.PermissionDenied or StatusCode.FailedPrecondition)
+                {
+                    _errorDeleteRequest = status.Detail;
+                }
+                else
+                {
+                    _errorDeleteRequest = "Something bad happen please try again later";
+                }
+            }
+
+            Logger.LogError(exception, exception.Message);
+        }
     }
 }

@@ -123,6 +123,7 @@ else
     {
         IsModalOpen = true;
         AdditionToDelete = additionDto;
+        _errorDelete = "";
     }
 
     private void CloseModal()
@@ -135,12 +136,6 @@ else
     private async Task DeleteAddition()
     {
         _errorDelete = "";
-        if (AdditionToDelete is null)
-        {
-            IsModalOpen = false;
-            return;
-        }
-
         try 
         {
             await AdditionService.DeleteAsync(AdditionToDelete.Id);

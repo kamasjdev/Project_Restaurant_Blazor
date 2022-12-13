@@ -10,6 +10,7 @@
 @using System.Linq.Expressions;
 @inject IUserService UserService;
 @inject NavigationManager NavigationManager;
+@inject ILogger<EditUserPage> Logger;
 
 <AuthorizationComponent Roles="admin" />
 <h3>Edit User</h3>
@@ -74,7 +75,28 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        _user = await UserService.GetAsync(Id);
+        try
+        {   
+            _user = await UserService.GetAsync(Id);
+        }
+        catch (Exception exception)
+        {
+            if (exception is RpcException)
+            {
+                var status = ((RpcException)exception).Status;
+
+                if (status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
+                {
+                    _error = status.Detail;
+                }
+                else
+                {
+                    _error = "Something bad happen please try again later";
+                }
+            }
+
+            Logger.LogError(exception, exception.Message);
+        }
         _form.Role = _user.Role;
         _form.Email = _user.Email;
         _editContext = new(_form);
@@ -90,6 +112,7 @@ else
 
     private async Task HandleValidSubmit()
     {
+        _error = "";
         if (_editContext is null)
         {
             _error = "Something bad happen, please try again later";
@@ -101,7 +124,28 @@ else
             return;
         }
 
-        await UserService.UpdateAsync(new UpdateUserDto(Id, _form.Email, _form.Password, _form.Role));
-        NavigationManager.NavigateTo("/users");
+        try
+        {
+            await UserService.UpdateAsync(new UpdateUserDto(Id, _form.Email, _form.Password, _form.Role));
+            NavigationManager.NavigateTo("/users");
+        }
+        catch (Exception exception)
+        {
+            if (exception is RpcException)
+            {
+                var status = ((RpcException)exception).Status;
+
+                if (status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
+                {
+                    _error = status.Detail;
+                }
+                else
+                {
+                    _error = "Something bad happen please try again later";
+                }
+            }
+
+            Logger.LogError(exception, exception.Message);
+        }
     }
 }

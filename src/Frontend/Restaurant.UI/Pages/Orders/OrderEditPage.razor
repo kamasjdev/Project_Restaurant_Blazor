@@ -9,6 +9,7 @@
 @inject IProductService ProductService;
 @inject IAdditionService AdditionService;
 @inject NavigationManager NavigationManager;
+@inject ILogger<OrderEditPage> Logger;
 
 <AuthorizationComponent Roles="admin" />
 <h3>OrderEditPage</h3>
@@ -25,6 +26,10 @@ else
     }
     else
     {
+        @if (!string.IsNullOrWhiteSpace(_error))
+        {
+            <ErrorComponent Text="@_error" />
+        }
         <OrderEditComponent Order="_order" Products="_products" Additions="_additions" OnSend="Send" />
     }
 }
@@ -37,6 +42,7 @@ else
     private OrderDetailsDto? _order;
     private IEnumerable<ProductDto> _products = new List<ProductDto>();
     private IEnumerable<AdditionDto> _additions = new List<AdditionDto>();
+    private string _error = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -44,30 +50,66 @@ else
         var products = ProductService.GetAllAsync();
         var additions = AdditionService.GetAllAsync();
         var tasks = new List<Task>() { order, products, additions };
-        await Task.WhenAll(tasks);
-        _order = await order;
-        _products = await products;
-        _additions = await additions;
+        try
+        {   
+            await Task.WhenAll(tasks);
+            _order = await order;
+            _products = await products;
+            _additions = await additions;
+        }
+        catch (Exception exception)
+        {
+            if (exception is RpcException)
+            {
+                var status = ((RpcException)exception).Status;
+
+                if (status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
+                {
+                    _error = status.Detail;
+                }
+                else
+                {
+                    _error = "Something bad happen please try again later";
+                }
+            }
+
+            Logger.LogError(exception, exception.Message);
+        }
         await base.OnInitializedAsync();
-        await Task.Delay(500);
         _loading = false;
     }
 
     private async Task Send(OrderDetailsDto dto)
     {
-        await OrderService.UpdateAsync(new AddOrderDto
+        try
         {
-            Id = dto.Id,
-            Email = dto.Email,
-            Note = dto.Note,
-            ProductSaleIds = dto.Products.Select(ps => ps.Id)
-        });
-        _order.Note = dto.Note;
-        _order.Email = dto.Email;
-        _order.Created = dto.Created;
-        _order.OrderNumber = dto.OrderNumber;
-        _order.Price = dto.Price;
-        _order.Products = dto.Products;
-        NavigationManager.NavigateTo("/orders");
+            _error = "";
+            await OrderService.UpdateAsync(new AddOrderDto
+            {
+                Id = dto.Id,
+                Email = dto.Email,
+                Note = dto.Note,
+                ProductSaleIds = dto.Products.Select(ps => ps.Id)
+            });
+            NavigationManager.NavigateTo("/orders");
+        }
+        catch (Exception exception)
+        {
+            if (exception is RpcException)
+            {
+                var status = ((RpcException)exception).Status;
+
+                if (status.StatusCode is StatusCode.PermissionDenied or StatusCode.FailedPrecondition)
+                {
+                    _error = status.Detail;
+                }
+                else
+                {
+                    _error = "Something bad happen please try again later";
+                }
+            }
+
+            Logger.LogError(exception, exception.Message);
+        }
     }
 }

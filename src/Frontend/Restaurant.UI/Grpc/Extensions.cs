@@ -7,6 +7,10 @@ using Restaurant.Shared.ProductProto;
 using Restaurant.Shared.ProductSaleProto;
 using Restaurant.Shared.UserProto;
 using Grpc.Core.Interceptors;
+using Blazored.LocalStorage;
+using Restaurant.UI.DTO;
+using System.Threading.Channels;
+using Grpc.Core;
 
 namespace Restaurant.UI.Grpc
 {
@@ -21,49 +25,49 @@ namespace Restaurant.UI.Grpc
 				throw new InvalidOperationException("Invalid backend url");
 			}
 
-			services.AddSingleton(services =>
+			services.AddSingleton(provider =>
 			{
 				var httpClient = new HttpClient(new GrpcWebHandler(GrpcWebMode.GrpcWeb, new HttpClientHandler()));
 				var baseUri = backendUrl;
 				var channel = GrpcChannel.ForAddress(baseUri, new GrpcChannelOptions { HttpClient = httpClient });
 				return new WeatherForecasts.WeatherForecastsClient(channel);
 			});
-			services.AddSingleton(services =>
+			services.AddSingleton(provider =>
 			{
-				var httpClient = new HttpClient(new GrpcWebHandler(GrpcWebMode.GrpcWeb, new HttpClientHandler()));
+				var httpClient = new HttpClient(new AuthGrpcDelegatingHandler(new GrpcWebHandler(GrpcWebMode.GrpcWeb, new HttpClientHandler()), provider));
 				var baseUri = backendUrl;
 				var channel = GrpcChannel.ForAddress(baseUri, new GrpcChannelOptions { HttpClient = httpClient });
 				return new Additions.AdditionsClient(channel);
 			});
-			services.AddSingleton(services =>
+			services.AddSingleton(provider =>
 			{
-				var httpClient = new HttpClient(new GrpcWebHandler(GrpcWebMode.GrpcWeb, new HttpClientHandler()));
+				var httpClient = new HttpClient(new AuthGrpcDelegatingHandler(new GrpcWebHandler(GrpcWebMode.GrpcWeb, new HttpClientHandler()), provider));
 				var baseUri = backendUrl;
 				var channel = GrpcChannel.ForAddress(baseUri, new GrpcChannelOptions { HttpClient = httpClient });
 				return new Orders.OrdersClient(channel);
 			});
-			services.AddSingleton(services =>
+			services.AddSingleton(provider =>
 			{
-				var httpClient = new HttpClient(new GrpcWebHandler(GrpcWebMode.GrpcWeb, new HttpClientHandler()));
+				var httpClient = new HttpClient(new AuthGrpcDelegatingHandler(new GrpcWebHandler(GrpcWebMode.GrpcWeb, new HttpClientHandler()), provider));
 				var baseUri = backendUrl;
 				var channel = GrpcChannel.ForAddress(baseUri, new GrpcChannelOptions { HttpClient = httpClient });
 				return new Products.ProductsClient(channel);
 			});
-			services.AddSingleton(services =>
+			services.AddSingleton(provider =>
 			{
-				var httpClient = new HttpClient(new GrpcWebHandler(GrpcWebMode.GrpcWeb, new HttpClientHandler()));
+				var httpClient = new HttpClient(new AuthGrpcDelegatingHandler(new GrpcWebHandler(GrpcWebMode.GrpcWeb, new HttpClientHandler()), provider));
 				var baseUri = backendUrl;
 				var channel = GrpcChannel.ForAddress(baseUri, new GrpcChannelOptions { HttpClient = httpClient });
 				return new ProductSales.ProductSalesClient(channel);
 			});
-			services.AddSingleton(services =>
+			services.AddSingleton(provider =>
 			{
-				var httpClient = new HttpClient(new GrpcWebHandler(GrpcWebMode.GrpcWeb, new HttpClientHandler()));
-				var baseUri = backendUrl;
+                var httpClient = new HttpClient(new AuthGrpcDelegatingHandler(new GrpcWebHandler(GrpcWebMode.GrpcWeb, new HttpClientHandler()), provider));
+                var baseUri = backendUrl;
 				var channel = GrpcChannel.ForAddress(baseUri, new GrpcChannelOptions { HttpClient = httpClient });
 				return new Users.UsersClient(channel);
 			});
 			return services;
-		}
-	}
+        }
+    }
 }

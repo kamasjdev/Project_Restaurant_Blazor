@@ -1,4 +1,6 @@
 ﻿@page "/my-orders"
+@using Restaurant.UI.Components.Errors
+@using Restaurant.UI.Components.LoadingIcon
 @using Restaurant.UI.Components.Table
 @using Restaurant.UI.DTO;
 @using Restaurant.UI.Services.Abstractions;
@@ -6,39 +8,75 @@
 @inject IJSRuntime JSRuntime;
 @inject IOrderService OrderService;
 @inject AuthenticationStateProvider AuthenticationStateProvider;
+@inject ILogger<MyOrdersPage> Logger;
 
 <h3>MyOrders</h3>
 
-@if (!_orders.Any())
+@if (_loading)
 {
-    <p><em>You haven't ordered any products</em></p>
+    <LoadingIconComponent />
 }
 else
 {
-    <TableComponent Items="_orders.ToList()">
-        <DataColumn TRowData="OrderDto" Title="Id" Expression="o => o.Id" />
-        <DataColumn TRowData="OrderDto" Title="Order Number" Expression="o => o.OrderNumber" />
-        <DataColumn TRowData="OrderDto" Title="Product Name" Expression="o => o.Email" />
-        <DataColumn TRowData="OrderDto" Title="Price" Expression="o => o.Price" Format="{0:0.00}" />
-        <DataColumn TRowData="OrderDto" Title="Created" Expression="o => o.Created" />
-        <DataColumn TRowData="OrderDto" Title="Action">
-            <button class="btn btn-primary" @onclick="() => ShowDetails(context.Id)">
-                Details
-            </button>
-        </DataColumn>
-    </TableComponent>
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+	    <ErrorComponent Text="@_error" />
+    }
+    @if (!_orders.Any())
+    {
+        <p><em>You haven't ordered any products</em></p>
+    }
+    else
+    {
+        <TableComponent Items="_orders.ToList()">
+            <DataColumn TRowData="OrderDto" Title="Id" Expression="o => o.Id" />
+            <DataColumn TRowData="OrderDto" Title="Order Number" Expression="o => o.OrderNumber" />
+            <DataColumn TRowData="OrderDto" Title="Product Name" Expression="o => o.Email" />
+            <DataColumn TRowData="OrderDto" Title="Price" Expression="o => o.Price" Format="{0:0.00}" />
+            <DataColumn TRowData="OrderDto" Title="Created" Expression="o => o.Created" />
+            <DataColumn TRowData="OrderDto" Title="Action">
+                <button class="btn btn-primary" @onclick="() => ShowDetails(context.Id)">
+                    Details
+                </button>
+            </DataColumn>
+        </TableComponent>
+    }
 }
 
 @code {
     private IEnumerable<OrderDto> _orders = new List<OrderDto>();
     private string _email = "";
+    private string _error = "";
+    private bool _loading = true;
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         _email = authState?.User?.Claims?.SingleOrDefault(c => c.Type == "email")?.Value ?? "";
-        _orders = await OrderService.GetAllByEmailAsync(_email);
+        try
+        {
+            _orders = await OrderService.GetAllByEmailAsync(_email);
+        }
+        catch (Exception exception)
+        {
+            if (exception is RpcException)
+            {
+                var status = ((RpcException)exception).Status;
+
+                if (status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
+                {
+                    _error = status.Detail;
+                }
+                else
+                {
+                    _error = "Something bad happen please try again later";
+                }
+            }
+
+            Logger.LogError(exception, exception.Message);
+        }
         await base.OnInitializedAsync();
+        _loading = false;
     }
 
     private async Task ShowDetails(Guid id)

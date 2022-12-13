@@ -22,7 +22,7 @@
 
 	private async Task Send(AdditionDto additionDto)
 	{
-
+		_error = "";
 		try
 		{
 			await AdditionService.AddAsync(additionDto);
@@ -34,7 +34,7 @@
 			{
 				var status = ((RpcException)exception).Status;
 
-				if(status.StatusCode is StatusCode.PermissionDenied or StatusCode.FailedPrecondition)
+				if(status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
 				{
 					_error = status.Detail;
 				}

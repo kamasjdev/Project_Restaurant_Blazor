@@ -1,5 +1,6 @@
 ﻿@page "/users"
 @using Restaurant.UI.Components
+@using Restaurant.UI.Components.Errors
 @using Restaurant.UI.Components.LoadingIcon
 @using Restaurant.UI.Components.Modal
 @using Restaurant.UI.Components.NavigationButton
@@ -8,6 +9,7 @@
 @using Restaurant.UI.Services.Abstractions;
 @inject IUserService UserService;
 @inject NavigationManager NavigationManager;
+@inject ILogger<UsersPage> Logger;
 
 <AuthorizationComponent Roles="admin" />
 <h3>Users</h3>
@@ -18,6 +20,10 @@
 }
 else
 {
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+	    <ErrorComponent Text="@_error" />
+    }
     <NavigationButtonComponent CssClass="btn btn-success mt-2 mb-2" Url="/users/add" Text="Add" />
     <TableComponent Items="_users.ToList()">
         <DataColumn TRowData="UserDto" Title="Id" Expression="u => u.Id" />
@@ -41,6 +47,10 @@ else
                 <div class="text-info-delete">
                     Do you wish to delete addition @_userToDelete?.Email with id @_userToDelete?.Id
                 </div>
+                @if (!string.IsNullOrWhiteSpace(_errorDeleteRequest))
+                {
+                    <ErrorComponent Text="@_errorDeleteRequest" />
+                }
             </Body>
             <Footer>
                 <button class="btn btn-danger me-2" @onclick="DeleteUser">
@@ -59,6 +69,8 @@ else
     private bool _loading = true;
     private bool _modalOpen = false;
     private UserDto? _userToDelete;
+    private string _error = "";
+    private string _errorDeleteRequest = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -70,25 +82,69 @@ else
     {
         _modalOpen = true;
         _userToDelete = dto;
+        _errorDeleteRequest = "";
     }
 
     private void CloseModal()
     {
         _userToDelete = null;
+        _errorDeleteRequest = "";
         _modalOpen = false;
     }
 
     private async Task DeleteUser()
     {
-        await UserService.DeleteAsync(_userToDelete.Id);
-        await FetchUsers();
-        CloseModal();
+        try
+        {
+            await UserService.DeleteAsync(_userToDelete.Id);
+            await FetchUsers();
+            CloseModal();
+        }
+        catch (Exception exception)
+        {
+            if (exception is RpcException)
+            {
+                var status = ((RpcException)exception).Status;
+
+                if (status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
+                {
+                    _errorDeleteRequest = status.Detail;
+                }
+                else
+                {
+                    _errorDeleteRequest = "Something bad happen please try again later";
+                }
+            }
+
+            Logger.LogError(exception, exception.Message);
+        }
     }
 
     private async Task FetchUsers()
     {
         _loading = true;
-        _users = await UserService.GetAllAsync();
+        try
+        {    
+            _users = await UserService.GetAllAsync();
+        }
+        catch (Exception exception)
+        {
+            if (exception is RpcException)
+            {
+                var status = ((RpcException)exception).Status;
+
+                if (status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
+                {
+                    _error = status.Detail;
+                }
+                else
+                {
+                    _error = "Something bad happen please try again later";
+                }
+            }
+
+            Logger.LogError(exception, exception.Message);
+        }
         _loading = false;
     }
 }

@@ -1,5 +1,6 @@
 ﻿@page "/orders"
 @using Restaurant.UI.Components
+@using Restaurant.UI.Components.Errors
 @using Restaurant.UI.Components.Modal
 @using Restaurant.UI.Components.Table
 @using Restaurant.UI.DTO;
@@ -8,11 +9,17 @@
 @inject IJSRuntime JSRuntime;
 @inject IOrderService OrderService;
 @inject NavigationManager NavigationManager;
+@inject ILogger<OrdersPage> Logger;
 
 <AuthorizationComponent Roles="admin" />
 
 <h3>Orders</h3>
 
+
+@if (!string.IsNullOrWhiteSpace(_error))
+{
+	<ErrorComponent Text="@_error" />
+}
 <TableComponent Items="_orders">
     <DataColumn TRowData="OrderDto" Title="Id" Expression="o => o.Id" />
     <DataColumn TRowData="OrderDto" Title="Order Number" Expression="o => o.OrderNumber" />
@@ -39,6 +46,10 @@
             <div class="text-info-delete">
                 Do you wish to delete order @_orderToDelete?.OrderNumber with id @_orderToDelete?.Id
             </div>
+            @if (!string.IsNullOrWhiteSpace(_errorDeleteRequest))
+            {
+                <ErrorComponent Text="@_errorDeleteRequest" />
+            }
         </Body>
         <Footer>
             <button class="btn btn-danger me-2" @onclick="DeleteOrder">
@@ -55,6 +66,8 @@
     private List<OrderDto> _orders = new();
     private bool _openModal = false;
     private OrderDto? _orderToDelete;
+    private string _error = "";
+    private string _errorDeleteRequest = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -71,28 +84,67 @@
     {
         _openModal = true;
         _orderToDelete = orderDto;
+        _errorDeleteRequest = "";
     }
 
     private void CloseModal()
     {
+        _errorDeleteRequest = "";
+        _orderToDelete = null;
         _openModal = false;
     }
 
     private async Task DeleteOrder()
     {
-        if (_orderToDelete is null)
+        try
         {
-            _openModal = false;
-            return;
+            _errorDeleteRequest = "";
+            await OrderService.DeleteAsync(_orderToDelete.Id);
+            CloseModal();
+            await FetchOrders();
         }
+        catch (Exception exception)
+        {
+            if (exception is RpcException)
+            {
+                var status = ((RpcException)exception).Status;
 
-        await OrderService.DeleteAsync(_orderToDelete.Id);
-        _openModal = false;
-        await FetchOrders();
+                if (status.StatusCode is StatusCode.PermissionDenied or StatusCode.FailedPrecondition)
+                {
+                    _errorDeleteRequest = status.Detail;
+                }
+                else
+                {
+                    _errorDeleteRequest = "Something bad happen please try again later";
+                }
+            }
+
+            Logger.LogError(exception, exception.Message);
+        }
     }
 
     private async Task FetchOrders()
     {
-        _orders = new List<OrderDto>(await OrderService.GetAllAsync());
+        try
+        {
+            _orders = new List<OrderDto>(await OrderService.GetAllAsync());
+        }
+        catch (Exception exception)
+        {
+            if (exception is RpcException)
+            {
+                var status = ((RpcException)exception).Status;
+
+                if (status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)                {
+                    _error = status.Detail;
+                }
+                else
+                {
+                    _error = "Something bad happen please try again later";
+                }
+            }
+
+            Logger.LogError(exception, exception.Message);
+        }
     }
 }

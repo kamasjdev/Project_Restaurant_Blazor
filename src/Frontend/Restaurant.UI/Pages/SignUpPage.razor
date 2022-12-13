@@ -10,6 +10,7 @@
 @using Restaurant.UI.Services.Abstractions;
 @inject IAuthenticationService AuthenticationService;
 @inject NavigationManager NavigationManager;
+@inject ILogger<SignUpPage> Logger;
 
 <h3>Register</h3>
 
@@ -19,16 +20,21 @@
     </Authorized>
 </AuthorizeView>
 
+
+@if (!string.IsNullOrWhiteSpace(_error))
+{
+    <ErrorComponent Text="@_error" />
+}
 <EditForm EditContext="@editContext" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
 
     <InputTextFormComponent Label="Email" Type="InputTextFormType.Email" @bind-Value="Form.Email" Error="@(GetValidationMessage(context, () => Form.Email))" />
     <InputTextFormComponent Label="Password" Type="InputTextFormType.Password" @bind-Value="Form.Password" Error="@(GetValidationMessage(context, () => Form.Password))" />
     <InputTextFormComponent Label="Confirm Password" Type="InputTextFormType.Password" @bind-Value="Form.ConfirmPassword" Error="@(GetValidationMessage(context, () => Form.ConfirmPassword))" />
-    @if (Error is not null)
+    @if (_error is not null)
     {
         <div class="mt-2">
-            <ErrorComponent Text="@Error" />
+            <ErrorComponent Text="@_error" />
         </div>
     }
     <div class="mt-2">
@@ -43,7 +49,7 @@
     public bool Loading { get; set; }
     private SignInForm Form { get; set; } = new();
     private EditContext? editContext;
-    private string? Error;
+    private string? _error;
 
     private class SignInForm
     {
@@ -75,9 +81,10 @@
 
     private async Task HandleValidSubmit()
     {
+        _error = "";
         if (editContext is null)
         {
-            Error = "Something bad happen, please try again later";
+            _error = "Something bad happen, please try again later";
             return;
         }
 
@@ -86,7 +93,28 @@
             return;
         }
 
-        await AuthenticationService.SignUpAsync(new DTO.SignUpDto(Form.Email, Form.Password));
-        NavigationManager.NavigateTo("/");
+        try
+        {
+            await AuthenticationService.SignUpAsync(new DTO.SignUpDto(Form.Email, Form.Password));
+            NavigationManager.NavigateTo("/");
+        }
+        catch (Exception exception)
+        {
+            if (exception is RpcException)
+            {
+                var status = ((RpcException)exception).Status;
+
+                if (status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
+                {
+                    _error = status.Detail;
+                }
+                else
+                {
+                    _error = "Something bad happen please try again later";
+                }
+            }
+
+            Logger.LogError(exception, exception.Message);
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿@page "/create-order"
+@using Restaurant.UI.Components.Errors
 @using Restaurant.UI.Components.LoadingIcon
 @using Restaurant.UI.Components.Orders
 @using Restaurant.UI.DTO;
@@ -10,9 +11,15 @@
 @inject IOrderService OrderService;
 @inject AuthenticationStateProvider AuthenticationStateProvider;
 @inject NavigationManager NavigationManager;
+@inject ILogger<CreateOrderPage> Logger;
 
 <h3>Create Order</h3>
 
+
+@if (!string.IsNullOrWhiteSpace(_error))
+{
+	<ErrorComponent Text="@_error" />
+}
 @if (_loading)
 {
     <LoadingIconComponent />
@@ -28,6 +35,7 @@ else
     private IEnumerable<AdditionDto>? _additions { get; set; }
     private IEnumerable<ProductSaleDto> _productsInCart { get; set; } = new List<ProductSaleDto>();
     private string _email = "";
+    private string _error = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -36,15 +44,58 @@ else
         _productsInCart = await ProductSaleService.GetAllInCartByEmailAsync(_email);
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         _email = authState?.User?.Claims?.SingleOrDefault(c => c.Type == "email")?.Value;
-        _productsInCart = await ProductSaleService.GetAllInCartByEmailAsync(_email);
+        try
+        {
+            _productsInCart = await ProductSaleService.GetAllInCartByEmailAsync(_email);
+        }
+        catch (Exception exception)
+        {
+            if (exception is RpcException)
+            {
+                var status = ((RpcException)exception).Status;
+
+                if (status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
+                {
+                    _error = status.Detail;
+                }
+                else
+                {
+                    _error = "Something bad happen please try again later";
+                }
+            }
+
+            Logger.LogError(exception, exception.Message);
+        }
+
         await base.OnInitializedAsync();
-        await Task.Delay(1000);
         _loading = false;
     }
 
     private async Task AddOrder(AddOrderDto addOrderDto)
     {
-        await OrderService.AddAsync(addOrderDto);
-        NavigationManager.NavigateTo($"/orders/view/{addOrderDto.Id}");
+        try
+        {
+            _error = "";
+            await OrderService.AddAsync(addOrderDto);
+            NavigationManager.NavigateTo($"/orders/view/{addOrderDto.Id}");
+        }
+        catch (Exception exception)
+        {
+            if (exception is RpcException)
+            {
+                var status = ((RpcException)exception).Status;
+
+                if (status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
+                {
+                    _error = status.Detail;
+                }
+                else
+                {
+                    _error = "Something bad happen please try again later";
+                }
+            }
+
+            Logger.LogError(exception, exception.Message);
+        }
     }
 }

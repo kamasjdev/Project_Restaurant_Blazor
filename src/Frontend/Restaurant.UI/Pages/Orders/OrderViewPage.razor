@@ -7,6 +7,7 @@
 @using Restaurant.UI.Services.Abstractions;
 @attribute [Authorize]
 @inject IOrderService OrderService;
+@inject ILogger<OrderViewPage> Logger;
 
 <h3>OrderViewPage</h3>
 
@@ -16,9 +17,9 @@
 }
 else
 {
-    @if (_order is null)
+    @if (!string.IsNullOrWhiteSpace(_error))
     {
-        <ErrorComponent Text="@($"Order with id {Id} was not found")" />
+        <ErrorComponent Text="@_error" />
     }
     else
     {
@@ -33,10 +34,32 @@ else
 
     private bool _loading = true;
     private OrderDetailsDto? _order;
+    private string _error = "";
 
     protected override async Task OnInitializedAsync()
     {
-        _order = await OrderService.GetAsync(Id);
+        try
+        {
+            _order = await OrderService.GetAsync(Id);
+        }
+        catch (Exception exception)
+        {
+            if (exception is RpcException)
+            {
+                var status = ((RpcException)exception).Status;
+
+                if (status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
+                {
+                    _error = status.Detail;
+                }
+                else
+                {
+                    _error = "Something bad happen please try again later";
+                }
+            }
+
+            Logger.LogError(exception, exception.Message);
+        }
         await base.OnInitializedAsync();
         _loading = false;
     }

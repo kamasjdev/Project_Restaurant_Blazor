@@ -7,6 +7,7 @@
 @using Restaurant.UI.Services.Abstractions;
 @attribute [Authorize]
 @inject IProductService ProductService;
+@inject ILogger<ViewProductPage> Logger;
 
 <h3>ViewProductPage</h3>
 
@@ -40,11 +41,33 @@ else
     private bool Loading { get; set; } = true;
 
     private ProductDto? Product;
+    private string _error = "";
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        Product = await ProductService.GetAsync(Id);
+        try 
+        {
+            Product = await ProductService.GetAsync(Id);
+        }
+        catch (Exception exception)
+        {
+            if (exception is RpcException)
+            {
+                var status = ((RpcException)exception).Status;
+
+                if (status.StatusCode is StatusCode.PermissionDenied or StatusCode.FailedPrecondition)
+                {
+                    _error = status.Detail;
+                }
+                else
+                {
+                    _error = "Something bad happen please try again later";
+                }
+            }
+
+            Logger.LogError(exception, exception.Message);
+        }
         Loading = false;
     }
 }
