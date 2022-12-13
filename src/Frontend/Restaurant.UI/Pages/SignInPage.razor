@@ -79,8 +79,7 @@
             return;
         }
 
-        var dto = await AuthenticationService.SignInAsync(new DTO.SignInDto(Form.Email, Form.Password));
-        await ((CustomAuthenticationStateProvider)AuthenticationStateProvider).UpdateAuthenticationStateAsync(dto);
+        await AuthenticationService.SignInAsync(new DTO.SignInDto(Form.Email, Form.Password));
         NavigationManager.NavigateTo("/");
     }
 }

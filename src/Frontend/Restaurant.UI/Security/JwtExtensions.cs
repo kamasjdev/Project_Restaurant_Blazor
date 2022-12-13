@@ -6,39 +6,17 @@ namespace Restaurant.UI.Security
 {
     public static class JwtExtensions
     {
-        public static UserDto? ParseUserFromJwt(string? jwt)
+        public static IEnumerable<Claim> ParseClaimsFromJwt(string? jwt)
         {
             if (string.IsNullOrWhiteSpace(jwt))
             {
-                return null;
+                return new List<Claim>();
             }
 
             var payload = jwt.Split('.')[1];
             var jsonBytes = ParseBase64WithoutPadding(payload);
             var keyValuePairs = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonBytes) ?? new Dictionary<string, object>();
-
-            var user = new UserDto();
-            foreach (var kvp in keyValuePairs)
-            {
-                if (kvp.Key == "sub")
-                {
-                    user.Id = Guid.Parse(kvp.Value.ToString());
-                    continue;
-                }
-
-                if (kvp.Key == ClaimTypes.Email)
-                {
-                    user.Email = kvp.Value.ToString();
-                    continue;
-                }
-
-                if (kvp.Key == ClaimTypes.Role)
-                {
-                    user.Role = kvp.Value.ToString();
-                    continue;
-                }
-            }
-            return user;
+            return keyValuePairs.Select(kvp => new Claim(kvp.Key, kvp.Value.ToString()));
         }
 
         private static byte[] ParseBase64WithoutPadding(string base64)

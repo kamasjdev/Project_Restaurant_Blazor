@@ -26,31 +26,53 @@ namespace Restaurant.UI.Security
                 return new AuthenticationState(_annonymous);
             }
 
-            var user = JwtExtensions.ParseUserFromJwt(token.AccessToken);
-
-            if (user is null)
-            {
-                return new AuthenticationState(_annonymous);
-            }
-
-            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
-                { new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), new Claim(ClaimTypes.Email, user.Email), new Claim(ClaimTypes.Role, user.Role) }
-            , authenticationType: AUTH))); // need to specify authenticate type, if not specified user will be annonymous
+            return GetAuthenticationState(token.AccessToken);
         }
 
         // method used for update state
-        public async Task UpdateAuthenticationStateAsync(UserDto? userDto)
+        public async Task UpdateAuthenticationStateAsync(string? token)
         {
-            if (userDto is null)
+            if (string.IsNullOrWhiteSpace(token))
             {
-                await _localStorage.RemoveItemAsync("token");
                 NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(_annonymous)));
                 return;
             }
 
-            NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
-                { new Claim(ClaimTypes.NameIdentifier, userDto.Id.ToString()), new Claim(ClaimTypes.Email, userDto.Email), new Claim(ClaimTypes.Role, userDto.Role) }
-            , authenticationType: AUTH)))));
+            NotifyAuthenticationStateChanged(Task.FromResult(GetAuthenticationState(token)));
+        }
+
+        private AuthenticationState GetAuthenticationState(string? token)
+        {
+            var claims = JwtExtensions.ParseClaimsFromJwt(token);
+
+            if (!claims.Any())
+            {
+                return new AuthenticationState(_annonymous);
+            }
+
+            var expireClaim = claims.SingleOrDefault(c => c.Type == "exp");
+
+            if (expireClaim is null)
+            {
+                return new AuthenticationState(_annonymous);
+            }
+
+            var parsed = long.TryParse(expireClaim.Value, out var unixTimeStamp);
+            DateTime expireDate = new(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            expireDate = expireDate.AddSeconds(unixTimeStamp);
+
+            if (!parsed)
+            {
+                return new AuthenticationState(_annonymous);
+            }
+
+            if (expireDate < DateTime.UtcNow)
+            {
+                return new AuthenticationState(_annonymous);
+            }
+
+            // need to specify authenticate type, if not specified user will be annonymous
+            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(claims, authenticationType: AUTH)));
         }
     }
 }
