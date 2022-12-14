@@ -21,11 +21,11 @@
     </Authorized>
 </AuthorizeView>
 
-@if (!string.IsNullOrWhiteSpace(_error))
+@if (!string.IsNullOrWhiteSpace(Error))
 {
-    <ErrorComponent Text="@_error" />
+    <ErrorComponent Text="@Error" />
 }
-<EditForm EditContext="@editContext" OnValidSubmit="@HandleValidSubmit">
+<EditForm EditContext="@EditContext" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
 
     <InputTextFormComponent Label="Email" Type="InputTextFormType.Email" @bind-Value="Form.Email" Error="@(GetValidationMessage(context, () => Form.Email))" />
@@ -39,11 +39,11 @@
 
 @code {
     public bool Loading { get; set; }
-    private SignInForm Form { get; set; } = new();
-    private EditContext? editContext;
-    private string? _error;
+    public string? Error;
+    public SignInForm Form { get; set; } = new();
+    public EditContext? EditContext;
 
-    private class SignInForm
+    public class SignInForm
     {
         [Required]
         [EmailAddress]
@@ -55,11 +55,11 @@
 
     protected override void OnInitialized()
     {
-        editContext = new(Form);
+        EditContext = new(Form);
         base.OnInitialized();
     }
 
-    private string GetValidationMessage(EditContext editContext, Expression<Func<object>> field)
+    public string GetValidationMessage(EditContext editContext, Expression<Func<object>> field)
     {
         var validationMessage = editContext.GetValidationMessages(field).FirstOrDefault();
         return validationMessage ?? "";
@@ -67,14 +67,14 @@
 
     private async Task HandleValidSubmit()
     {
-        _error = "";
-        if (editContext is null)
+        Error = "";
+        if (EditContext is null)
         {
-            _error = "Something bad happen, please try again later";
+            Error = "Something bad happen, please try again later";
             return;
         }
 
-        if (!editContext.Validate())
+        if (!EditContext.Validate())
         {
             return;
         }
@@ -92,11 +92,11 @@
 
                 if (status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
                 {
-                    _error = status.Detail;
+                    Error = status.Detail;
                 }
                 else
                 {
-                    _error = "Something bad happen please try again later";
+                    Error = "Something bad happen please try again later";
                 }
             }
 
