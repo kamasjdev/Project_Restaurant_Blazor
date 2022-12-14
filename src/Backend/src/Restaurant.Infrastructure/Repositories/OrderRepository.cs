@@ -47,7 +47,7 @@ namespace Restaurant.Infrastructure.Repositories
             var sql = "SELECT Id, OrderNumber, Created, Price, Email, Note FROM orders";
             _logger.LogInformation($"Infrastructure: Invoking query: {sql}");
             return (await _dbConnection.QueryAsync<OrderDBO>(sql))
-                           .Select(o => new Order(o.Id, o.OrderNumber, o.Created, o.Price, Email.Of(o.Email), o.Note));
+                           .Select(o => new Order(o.Id, o.OrderNumber, DateTime.SpecifyKind(o.Created, DateTimeKind.Utc), o.Price, Email.Of(o.Email), o.Note));
         }
 
         public async Task<Order?> GetAsync(Guid id)
@@ -70,6 +70,7 @@ namespace Restaurant.Infrastructure.Repositories
                 if (!lookup.TryGetValue(o.Id, out order!))
                 {
                     lookup.Add(id, order = o);
+                    order.Created = DateTime.SpecifyKind(order.Created, DateTimeKind.Utc);
                 }
 
                 if (ps is not null)

@@ -4,6 +4,7 @@
 @using Restaurant.UI.Components.Orders
 @using Restaurant.UI.DTO;
 @using Restaurant.UI.Services.Abstractions;
+@using System.Security.Claims;
 @attribute [Authorize]
 @inject IProductService ProductService;
 @inject IAdditionService AdditionService;
@@ -41,9 +42,8 @@ else
     {
         _products = await ProductService.GetAllAsync();
         _additions = await AdditionService.GetAllAsync();
-        _productsInCart = await ProductSaleService.GetAllInCartByEmailAsync(_email);
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        _email = authState?.User?.Claims?.SingleOrDefault(c => c.Type == "email")?.Value;
+        _email = authState?.User?.Claims?.SingleOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
         try
         {
             _productsInCart = await ProductSaleService.GetAllInCartByEmailAsync(_email);
@@ -76,8 +76,8 @@ else
         try
         {
             _error = "";
-            await OrderService.AddAsync(addOrderDto);
-            NavigationManager.NavigateTo($"/orders/view/{addOrderDto.Id}");
+            var id = await OrderService.AddAsync(addOrderDto);
+            NavigationManager.NavigateTo($"/orders/view/{id}");
         }
         catch (Exception exception)
         {

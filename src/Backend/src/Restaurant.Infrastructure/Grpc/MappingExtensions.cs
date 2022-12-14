@@ -122,18 +122,34 @@ namespace Restaurant.Infrastructure.Grpc
                 }
             }
 
-            var additionIdParsed = Guid.TryParse(request.AdditionId, out var additionId);
-
-            if (additionIdParsed is false)
+            Guid? additionId = null;
+            if (!string.IsNullOrWhiteSpace(request.AdditionId))
             {
-                errors.Add($"Entered invalid AdditionId: '{request.AdditionId}'");
+                var additionIdParsed = Guid.TryParse(request.AdditionId, out var parsedAdditionId);
+
+                if (additionIdParsed is false)
+                {
+                    errors.Add($"Entered invalid AdditionId: '{request.AdditionId}'");
+                }
+                else
+                {
+                    additionId = parsedAdditionId;
+                }
             }
 
-            var orderIdParsed = Guid.TryParse(request.OrderId, out var orderId);
-
-            if (orderIdParsed is false)
+            Guid? orderId = null;
+            if (!string.IsNullOrWhiteSpace(request.OrderId))
             {
-                errors.Add($"Entered invalid OrderId: '{request.OrderId}'");
+                var orderIdParsed = Guid.TryParse(request.OrderId, out var parsedOrderId);
+
+                if (orderIdParsed is false)
+                {
+                    errors.Add($"Entered invalid OrderId: '{request.OrderId}'");
+                }
+                else
+                {
+                    orderId = parsedOrderId;
+                }
             }
 
             var productIdParsed = Guid.TryParse(request.ProductId, out var productId);

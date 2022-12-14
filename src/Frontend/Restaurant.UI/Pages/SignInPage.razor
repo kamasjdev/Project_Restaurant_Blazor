@@ -30,12 +30,6 @@
 
     <InputTextFormComponent Label="Email" Type="InputTextFormType.Email" @bind-Value="Form.Email" Error="@(GetValidationMessage(context, () => Form.Email))" />
     <InputTextFormComponent Label="Password" Type="InputTextFormType.Password" @bind-Value="Form.Password" Error="@(GetValidationMessage(context, () => Form.Password))" />
-    @if (_error is not null)
-    {
-        <div class="mt-2">
-            <ErrorComponent Text="@_error" />
-        </div>
-    }
     <div class="mt-2">
         <button class="btn btn-success" type="submit">Login</button>
         <NavigationButtonComponent Text="Cancel" Url="/" />

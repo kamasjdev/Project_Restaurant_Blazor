@@ -116,7 +116,7 @@ namespace Restaurant.Application.Services
                 throw new InvalidCredentialsException();
             }
 
-            var token = _jwtManager.CreateToken(user.Id, user.Role);
+            var token = _jwtManager.CreateToken(user.Id, user.Role, signInDto.Email);
 
             return new AuthDto
             {

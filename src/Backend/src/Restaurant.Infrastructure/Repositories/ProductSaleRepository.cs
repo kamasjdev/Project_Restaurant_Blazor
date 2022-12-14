@@ -54,10 +54,39 @@ namespace Restaurant.Infrastructure.Repositories
 
         public async Task<IEnumerable<ProductSale>> GetAllInCartByEmailAsync(string email)
         {
-            var sql = "SELECT Id, ProductId, OrderId, AdditionId, EndPrice, Email, ProductSaleState FROM product_sales WHERE Email = @Email AND OrderId IS NULL";
+            var sql = """
+                SELECT ps.Id, ps.ProductId, ps.OrderId, ps.AdditionId, ps.EndPrice, ps.Email, ProductSaleState,
+                p.Id, p.ProductKind, p.ProductName, p.Price,
+                a.Id, a.AdditionKind, a.AdditionName, a.Price
+                FROM product_sales ps
+                JOIN products p on p.Id = ps.ProductId
+                LEFT JOIN additions a on a.Id = ps.AdditionId
+                WHERE Email = @Email AND OrderId IS NULL
+                """;
             _logger.LogInformation($"Infrastructure: Invoking query: {sql}");
-            return (await _dbConnection.QueryAsync<ProductSaleDBO>(sql, new { Email = email }))
-                           .Select(ps => new ProductSale(ps.Id, ps.ProductId, ps.ProductSaleState, ps.EndPrice, Email.Of(ps.Email), ps.AdditionId, ps.OrderId));
+            var lookup = new Dictionary<Guid, ProductSaleDBO>();
+            var productSaleData = (await _dbConnection.QueryAsync<ProductSaleDBO, ProductDBO, AdditionDBO, ProductSaleDBO>(sql, (ps, p, a) =>
+            {
+                ProductSaleDBO productSale;
+                if (!lookup.TryGetValue(ps.Id, out productSale!))
+                {
+                    lookup.Add(ps.Id, productSale = ps);
+                }
+
+                if (p is not null)
+                {
+                    productSale.Product = p;
+                }
+
+                if (a is not null)
+                {
+                    productSale.Addition = a;
+                }
+
+                return productSale;
+            }, new { Email = email })).ToList();
+
+            return productSaleData.Select(ps => ps.AsDetailsEntity());
         }
 
         public async Task<IEnumerable<ProductSale>> GetAllByOrderIdAsync(Guid orderId)

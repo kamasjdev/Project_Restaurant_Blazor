@@ -25,7 +25,12 @@ else
     {
         <OrderViewComponent Order="_order" />
     }
-    <NavigationButtonComponent Text="Back to Orders" Url="/orders" />
+    <AuthorizeView Roles="admin">
+        <Authorized>
+            <NavigationButtonComponent Text="Back to Orders" Url="/orders" CssClass="btn btn-primary me-2" />
+        </Authorized>
+    </AuthorizeView>
+    <NavigationButtonComponent Text="Back to My Orders" Url="/my-orders" />
 }
 
 @code {

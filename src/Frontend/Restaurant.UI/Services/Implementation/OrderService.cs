@@ -13,7 +13,7 @@ namespace Restaurant.UI.Services.Implementation
             _ordersClient = ordersClient;
         }
 
-        public async Task AddAsync(AddOrderDto addOrderDto)
+        public async Task<Guid> AddAsync(AddOrderDto addOrderDto)
         {
             var request = new AddOrderRequest
             {
@@ -26,7 +26,8 @@ namespace Restaurant.UI.Services.Implementation
             }
             request.ProductSaleIds.AddRange(addOrderDto.ProductSaleIds?.Select(ps =>
                     new ProductSaleId { Id = ps.ToString() }));
-            await _ordersClient.AddOrderAsync(request);
+            var response = await _ordersClient.AddOrderAsync(request);
+            return Guid.Parse(response.Id);
         }
 
         public async Task DeleteAsync(Guid id)

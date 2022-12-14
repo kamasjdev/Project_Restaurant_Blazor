@@ -4,6 +4,7 @@
 @using Restaurant.UI.Components.Table
 @using Restaurant.UI.DTO;
 @using Restaurant.UI.Services.Abstractions;
+@using System.Security.Claims;
 @attribute [Authorize]
 @inject IJSRuntime JSRuntime;
 @inject IOrderService OrderService;
@@ -52,7 +53,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        _email = authState?.User?.Claims?.SingleOrDefault(c => c.Type == "email")?.Value ?? "";
+        _email = authState?.User?.Claims?.SingleOrDefault(c => c.Type == ClaimTypes.Email)?.Value ?? "";
         try
         {
             _orders = await OrderService.GetAllByEmailAsync(_email);

@@ -27,7 +27,7 @@ namespace Restaurant.Infrastructure.Security
                     SecurityAlgorithms.HmacSha256);
         }
 
-        public string CreateToken(Guid userId, string role)
+        public string CreateToken(Guid userId, string role, string email)
         {
             var now = _clock.CurrentDate();
             var claims = new List<Claim>
@@ -35,7 +35,7 @@ namespace Restaurant.Infrastructure.Security
                 new(JwtRegisteredClaimNames.Sub, userId.ToString()),
                 new(JwtRegisteredClaimNames.UniqueName, userId.ToString()),
                 new(ClaimTypes.NameIdentifier, userId.ToString()),
-                new(ClaimTypes.Email, userId.ToString()),
+                new(ClaimTypes.Email, email),
                 new(ClaimTypes.Role, role)
             };
 

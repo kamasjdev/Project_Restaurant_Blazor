@@ -20,15 +20,18 @@ namespace Restaurant.Core.Entities
         {
             ChangeProduct(product);
 
-            if (addition != null)
+            if (addition is not null)
             {
                 ChangeAddition(addition);
             }
 
-            OrderId = order?.Id;
-            Order = order;
             ProductSaleState = productSaleState;
             Email = email;
+
+            if (order is not null)
+            {
+                AddOrder(order);
+            }
         }
 
         public ProductSale(EntityId? id, EntityId productId, ProductSaleState productSaleState, decimal endPrice, Email email, EntityId? additionId = null, EntityId? orderId = null)

@@ -2,6 +2,6 @@
 {
     public interface IJwtManager
     {
-        string CreateToken(Guid userId, string role);
+        string CreateToken(Guid userId, string role, string email);
     }
 }

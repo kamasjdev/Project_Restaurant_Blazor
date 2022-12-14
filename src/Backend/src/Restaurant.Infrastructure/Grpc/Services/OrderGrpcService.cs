@@ -31,7 +31,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
-			await orderService.AddAsync(request.AsDto());
+			await orderService.UpdateAsync(request.AsDto());
 			return new Empty();
 		}
 

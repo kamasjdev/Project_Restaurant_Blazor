@@ -48,7 +48,7 @@ namespace Restaurant.UnitTests.Services
             await _userService.SignInAsync(dto);
 
             await _userRepository.Received(1).GetAsync(dto.Email);
-            _jwtManager.Received(1).CreateToken(user.Id, user.Role);
+            _jwtManager.Received(1).CreateToken(user.Id, user.Role,user.Email.Value);
         }
 
         [Theory]

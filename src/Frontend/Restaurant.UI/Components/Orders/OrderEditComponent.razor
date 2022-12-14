@@ -170,15 +170,15 @@ else
         {
             _error = "";
             await OnSend.InvokeAsync(new OrderDetailsDto
-                {
-                    Id = Order.Id,
-                    Created = Order.Created,
-                    Email = _form.Email,
-                    Note = _form.Note,
-                    OrderNumber = Order.OrderNumber,
-                    Price = _form.ProductSales.Sum(ps => ps.EndPrice),
-                    Products = _form.ProductSales
-                });
+            {
+                Id = Order.Id,
+                Created = Order.Created,
+                Email = _form.Email,
+                Note = _form.Note,
+                OrderNumber = Order.OrderNumber,
+                Price = _form.ProductSales.Sum(ps => ps.EndPrice),
+                Products = _form.ProductSales
+            });
         }
         catch(Exception exception)
         {
@@ -293,13 +293,14 @@ else
             var productSale = new ProductSaleDto
                 {
                     Email = _form.Email,
-                    ProductSaleState = "New",
+                    ProductSaleState = "Ordered",
                     Product = _productChoosed,
                     Addition = _additionChoosed,
                     EndPrice = _additionChoosed is not null ? _productChoosed.Price + _additionChoosed.Price : _productChoosed.Price,
                     Order = Order
                 };
-            await ProductSaleService.AddAsync(productSale);
+            var id = await ProductSaleService.AddAsync(productSale);
+            productSale.Id = id;
             var productSales = new List<ProductSaleDto>(_form.ProductSales);
             productSales.Add(productSale);
             _form.ProductSales = productSales;

@@ -190,7 +190,8 @@ else
                     Addition = _additionToAdd,
                     EndPrice = _additionToAdd is not null ? _productToAdd.Price + _additionToAdd.Price : _productToAdd.Price
                 };
-            await ProductSaleService.AddAsync(productSale);
+            var id = await ProductSaleService.AddAsync(productSale);
+            productSale.Id = id;
             _productSales.Add(productSale);
         }
         catch(Exception exception)

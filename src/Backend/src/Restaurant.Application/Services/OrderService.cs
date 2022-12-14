@@ -111,8 +111,8 @@ namespace Restaurant.Application.Services
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                await _orderRepository.DeleteAsync(order);
                 await _productSaleRepository.DeleteByOrderAsync(id);
+                await _orderRepository.DeleteAsync(order);
                 await _unitOfWork.CommitAsync();
             }
             catch

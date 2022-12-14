@@ -31,12 +31,6 @@
     <InputTextFormComponent Label="Email" Type="InputTextFormType.Email" @bind-Value="Form.Email" Error="@(GetValidationMessage(context, () => Form.Email))" />
     <InputTextFormComponent Label="Password" Type="InputTextFormType.Password" @bind-Value="Form.Password" Error="@(GetValidationMessage(context, () => Form.Password))" />
     <InputTextFormComponent Label="Confirm Password" Type="InputTextFormType.Password" @bind-Value="Form.ConfirmPassword" Error="@(GetValidationMessage(context, () => Form.ConfirmPassword))" />
-    @if (_error is not null)
-    {
-        <div class="mt-2">
-            <ErrorComponent Text="@_error" />
-        </div>
-    }
     <div class="mt-2">
         <button class="btn btn-success" type="submit">Register</button>
         <NavigationButtonComponent Text="Cancel" Url="/" />
