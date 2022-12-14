@@ -22,13 +22,6 @@ namespace Restaurant.UI.Grpc
 
 			services.AddSingleton(provider =>
 			{
-				var httpClient = new HttpClient(new GrpcWebHandler(GrpcWebMode.GrpcWeb, new HttpClientHandler()));
-				var baseUri = backendUrl;
-				var channel = GrpcChannel.ForAddress(baseUri, new GrpcChannelOptions { HttpClient = httpClient });
-				return new WeatherForecasts.WeatherForecastsClient(channel);
-			});
-			services.AddSingleton(provider =>
-			{
 				var httpClient = new HttpClient(new AuthGrpcDelegatingHandler(new GrpcWebHandler(GrpcWebMode.GrpcWeb, new HttpClientHandler()), provider));
 				var baseUri = backendUrl;
 				var channel = GrpcChannel.ForAddress(baseUri, new GrpcChannelOptions { HttpClient = httpClient });

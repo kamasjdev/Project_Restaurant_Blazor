@@ -19,8 +19,6 @@ namespace Restaurant.Infrastructure.Grpc
         public static WebApplication UseGrpc(this WebApplication app)
         {
             app.UseGrpcWeb();
-            app.MapGrpcService<WeatherService>()
-                .EnableGrpcWeb();
             app.MapGrpcService<AdditionGrpcService>()
                 .EnableGrpcWeb();
             app.MapGrpcService<OrderGrpcService>()
