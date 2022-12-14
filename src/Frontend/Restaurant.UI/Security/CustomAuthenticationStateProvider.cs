@@ -30,15 +30,16 @@ namespace Restaurant.UI.Security
         }
 
         // method used for update state
-        public async Task UpdateAuthenticationStateAsync(string? token)
+        public Task UpdateAuthenticationStateAsync(string? token)
         {
             if (string.IsNullOrWhiteSpace(token))
             {
                 NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(_annonymous)));
-                return;
+                return Task.CompletedTask;
             }
 
             NotifyAuthenticationStateChanged(Task.FromResult(GetAuthenticationState(token)));
+            return Task.CompletedTask;
         }
 
         private AuthenticationState GetAuthenticationState(string? token)

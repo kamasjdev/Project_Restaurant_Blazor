@@ -8,6 +8,7 @@
 @using System.Linq.Expressions;
 @using Restaurant.UI.Services.Abstractions;
 @inject IProductSaleService ProductSaleService;
+@inject ILogger<OrderEditComponent> Logger;
 
 @if (Order is null)
 {
@@ -165,16 +166,38 @@ else
             return;
         }
 
-        await OnSend.InvokeAsync(new OrderDetailsDto
+        try
         {
-            Id = Order.Id,
-            Created = Order.Created,
-            Email = _form.Email,
-            Note = _form.Note,
-            OrderNumber = Order.OrderNumber,
-            Price = _form.ProductSales.Sum(ps => ps.EndPrice),
-            Products = _form.ProductSales
-        });
+            _error = "";
+            await OnSend.InvokeAsync(new OrderDetailsDto
+                {
+                    Id = Order.Id,
+                    Created = Order.Created,
+                    Email = _form.Email,
+                    Note = _form.Note,
+                    OrderNumber = Order.OrderNumber,
+                    Price = _form.ProductSales.Sum(ps => ps.EndPrice),
+                    Products = _form.ProductSales
+                });
+        }
+        catch(Exception exception)
+        {
+            if (exception is RpcException)
+            {
+                var status = ((RpcException)exception).Status;
+
+                if(status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
+                {
+                    _error = status.Detail;
+                }
+                else
+                {
+                    _error = "Something bad happen please try again later";
+                }
+            }
+
+            Logger.LogError(exception, exception.Message);
+        }
     }
 
     private void ProductSaleToChoose(ProductSaleDto dto)
@@ -230,8 +253,30 @@ else
 
     private async Task DeleteProductSale(Guid id)
     {
-        await ProductSaleService.DeleteAsync(id);
-        _form.ProductSales = new List<ProductSaleDto>(_form.ProductSales.Where(ps => ps.Id != id)); ;
+        try
+        {
+            _error = "";
+            await ProductSaleService.DeleteAsync(id);
+            _form.ProductSales = new List<ProductSaleDto>(_form.ProductSales.Where(ps => ps.Id != id)); ;
+        }
+        catch(Exception exception)
+        {
+            if (exception is RpcException)
+            {
+                var status = ((RpcException)exception).Status;
+
+                if(status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
+                {
+                    _error = status.Detail;
+                }
+                else
+                {
+                    _error = "Something bad happen please try again later";
+                }
+            }
+
+            Logger.LogError(exception, exception.Message);
+        }
     }
 
     private async Task AddProductSale()
@@ -242,22 +287,44 @@ else
             return;
         }
 
-        var productSale = new ProductSaleDto
+        try
         {
-            Email = _form.Email,
-            ProductSaleState = "New",
-            Product = _productChoosed,
-            Addition = _additionChoosed,
-            EndPrice = _additionChoosed is not null ? _productChoosed.Price + _additionChoosed.Price : _productChoosed.Price,
-            Order = Order
-        };
-        await ProductSaleService.AddAsync(productSale);
-        var productSales = new List<ProductSaleDto>(_form.ProductSales);
-        productSales.Add(productSale);
-        _form.ProductSales = productSales;
-        _errorAddNewProduct = "";
-        StateHasChanged();
-        _openModal = false;
+            _errorAddNewProduct = "";
+            var productSale = new ProductSaleDto
+                {
+                    Email = _form.Email,
+                    ProductSaleState = "New",
+                    Product = _productChoosed,
+                    Addition = _additionChoosed,
+                    EndPrice = _additionChoosed is not null ? _productChoosed.Price + _additionChoosed.Price : _productChoosed.Price,
+                    Order = Order
+                };
+            await ProductSaleService.AddAsync(productSale);
+            var productSales = new List<ProductSaleDto>(_form.ProductSales);
+            productSales.Add(productSale);
+            _form.ProductSales = productSales;
+            _errorAddNewProduct = "";
+            StateHasChanged();
+            _openModal = false;
+        }
+        catch(Exception exception)
+        {
+            if (exception is RpcException)
+			{
+				var status = ((RpcException)exception).Status;
+
+				if(status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
+				{
+					_errorAddNewProduct = status.Detail;
+				}
+				else
+				{
+					_errorAddNewProduct = "Something bad happen please try again later";
+				}
+			}
+
+			Logger.LogError(exception, exception.Message);
+        }
     }
 
     private void CloseModal()

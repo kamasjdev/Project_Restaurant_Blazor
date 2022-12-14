@@ -5,6 +5,7 @@
 @using Restaurant.UI.DTO;
 @using Restaurant.UI.Services.Abstractions;
 @inject IProductSaleService ProductSaleService;
+@inject ILogger<CreateOrderFormComponent> Logger;
 
 @if (!string.IsNullOrWhiteSpace(Errors))
 {
@@ -123,7 +124,7 @@ else
 
     [Parameter]
     public IEnumerable<ProductSaleDto> ProductSales { get; set; } = new List<ProductSaleDto>();
-    
+
     [Parameter]
     public EventCallback<AddOrderDto> OnSend { get; set; }
 
@@ -178,16 +179,38 @@ else
 
     private async Task AddProductSale()
     {
-        var productSale = new ProductSaleDto
+        try
         {
-            Product = _productToAdd,
-            Email = Email,
-            ProductSaleState = "New",
-            Addition = _additionToAdd,
-            EndPrice = _additionToAdd is not null ? _productToAdd.Price + _additionToAdd.Price : _productToAdd.Price
-        };
-        await ProductSaleService.AddAsync(productSale);
-        _productSales.Add(productSale);
+            Errors = "";
+            var productSale = new ProductSaleDto
+                {
+                    Product = _productToAdd,
+                    Email = Email,
+                    ProductSaleState = "New",
+                    Addition = _additionToAdd,
+                    EndPrice = _additionToAdd is not null ? _productToAdd.Price + _additionToAdd.Price : _productToAdd.Price
+                };
+            await ProductSaleService.AddAsync(productSale);
+            _productSales.Add(productSale);
+        }
+        catch(Exception exception)
+        {
+            if (exception is RpcException)
+            {
+                var status = ((RpcException)exception).Status;
+
+                if(status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
+                {
+                    Errors = status.Detail;
+                }
+                else
+                {
+                    Errors = "Something bad happen please try again later";
+                }
+            }
+
+            Logger.LogError(exception, exception.Message);            
+        }
     }
 
     private void MarkToDelete(ProductSaleDto productSaleDto)
@@ -208,19 +231,63 @@ else
             return;
         }
 
-        await ProductSaleService.DeleteAsync(_productSaleToDelete);
-        var productSale = _productSales.SingleOrDefault(ps => ps.Id == _productSaleToDelete);
-
-        if (productSale is not null)
+        Errors = "";
+        try
         {
-            _productSales.Remove(productSale);
-        }
+            await ProductSaleService.DeleteAsync(_productSaleToDelete);
+            var productSale = _productSales.SingleOrDefault(ps => ps.Id == _productSaleToDelete);
 
-        _productSaleToDelete = Guid.Empty;
+            if (productSale is not null)
+            {
+                _productSales.Remove(productSale);
+            }
+
+            _productSaleToDelete = Guid.Empty;
+        }
+        catch(Exception exception)
+        {
+            if (exception is RpcException)
+            {
+                var status = ((RpcException)exception).Status;
+
+                if (status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
+                {
+                    Errors = status.Detail;
+                }
+                else
+                {
+                    Errors = "Something bad happen please try again later";
+                }
+            }
+
+            Logger.LogError(exception, exception.Message);
+        }
     }
 
     private async Task CreateOrder()
     {
-        await OnSend.InvokeAsync(new AddOrderDto { Email = Email, ProductSaleIds = _productSales.Select(ps => ps.Id), Note = _note });
+        Errors = "";
+        try
+        {
+            await OnSend.InvokeAsync(new AddOrderDto { Email = Email, ProductSaleIds = _productSales.Select(ps => ps.Id), Note = _note });
+        }
+        catch(Exception exception)
+        {
+            if (exception is RpcException)
+            {
+                var status = ((RpcException)exception).Status;
+
+                if (status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
+                {
+                    Errors = status.Detail;
+                }
+                else
+                {
+                    Errors = "Something bad happen please try again later";
+                }
+            }
+
+            Logger.LogError(exception, exception.Message);
+        }
     }
 }

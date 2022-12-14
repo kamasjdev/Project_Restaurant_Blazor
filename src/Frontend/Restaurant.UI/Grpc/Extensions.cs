@@ -6,11 +6,6 @@ using Restaurant.Shared.OrderProto;
 using Restaurant.Shared.ProductProto;
 using Restaurant.Shared.ProductSaleProto;
 using Restaurant.Shared.UserProto;
-using Grpc.Core.Interceptors;
-using Blazored.LocalStorage;
-using Restaurant.UI.DTO;
-using System.Threading.Channels;
-using Grpc.Core;
 
 namespace Restaurant.UI.Grpc
 {

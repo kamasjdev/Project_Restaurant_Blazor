@@ -1,5 +1,4 @@
 ﻿using Blazored.LocalStorage;
-using Humanizer;
 using Microsoft.AspNetCore.Components.Authorization;
 using Restaurant.UI.DTO;
 using Restaurant.UI.Security;

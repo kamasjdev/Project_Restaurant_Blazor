@@ -1,5 +1,4 @@
-﻿using Restaurant.UI.DTO;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Text.Json;
 
 namespace Restaurant.UI.Security
