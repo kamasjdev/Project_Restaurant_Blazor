@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Shared\Restaurant.Shared\Restaurant.Shared.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Restaurant.Shared\Restaurant.Shared.csproj" />
   </ItemGroup>
 
 </Project>

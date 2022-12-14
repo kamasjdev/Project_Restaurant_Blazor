@@ -1,7 +1,8 @@
 ﻿@using Restaurant.UI.Components
 @using Restaurant.UI.Security;
+@using Restaurant.UI.Services.Abstractions;
 @inherits LayoutComponentBase
-@inject AuthenticationStateProvider AuthenticationStateProvider;
+@inject IAuthenticationService AuthenticationService;
 @inject NavigationManager NavigationManager;
 @inject IJSRuntime JsRuntime;
 
@@ -41,7 +42,7 @@
 @code {
     private async Task Logout()
     {
-        await ((CustomAuthenticationStateProvider)AuthenticationStateProvider).UpdateAuthenticationStateAsync(null);
+        await AuthenticationService.SignoutAsync();
         NavigationManager.NavigateTo("/");
     }
 
