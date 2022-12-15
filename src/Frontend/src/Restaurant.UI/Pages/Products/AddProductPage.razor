@@ -11,21 +11,21 @@
 
 <h3>AddProductPage</h3>
 
-@if (!string.IsNullOrWhiteSpace(_error))
+@if (!string.IsNullOrWhiteSpace(Error))
 {
-	<ErrorComponent Text="@_error" />
+	<ErrorComponent Text="@Error" />
 }
 <ProductFormComponent OnSend="Send" OnCancelClickButton='() => NavigationManager.NavigateTo("/products")' />
 <AuthorizationComponent Roles="admin" />
 
 @code {
-	private string _error = "";
+	public string Error = "";
 
 	private async Task Send(ProductDto productDto)
 	{
 		try
 		{
-			_error = "";
+			Error = "";
 			await ProductService.AddAsync(productDto);
             NavigationManager.NavigateTo("/products");
         }
@@ -37,11 +37,11 @@
 
 				if (status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
 				{
-					_error = status.Detail;
+					Error = status.Detail;
 				}
 				else
 				{
-					_error = "Something bad happen please try again later";
+					Error = "Something bad happen please try again later";
 				}
 			}
 

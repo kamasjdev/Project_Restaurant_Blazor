@@ -1,5 +1,4 @@
-﻿using AngleSharp.Dom;
-using Microsoft.AspNetCore.Components.Web;
+﻿using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Restaurant.UI.DTO;
 using Restaurant.UI.Pages;
@@ -9,6 +8,12 @@ namespace Restaurant.UI.UnitTests.Pages
 {
     public class SignUpPageTests
     {
+        [Fact]
+        public void should_render_sign_up_page()
+        {
+            _component.Markup.ShouldContain("Register");
+        }
+
         [Fact]
         public void given_empty_email_should_show_error()
         {

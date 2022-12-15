@@ -8,13 +8,13 @@
 
     <div>
         <div class="mb-2">
-            <InputTextFormComponent Label="Name" @bind-Value="@Product.ProductName" Error="@(context.GetValidationMessage(() => Product.ProductName))" />
+            <InputTextFormComponent Id="ProductName" Label="Name" @bind-Value="@Product.ProductName" Error="@(context.GetValidationMessage(() => Product.ProductName))" />
         </div>
         <div class="mb-2">
-            <InputNumberFormComponent Label="Price" @bind-Value="@Product.Price" Step="0.01" Error="@(context.GetValidationMessage(() => Product.Price))" />
+            <InputNumberFormComponent Id="Price" Label="Price" @bind-Value="@Product.Price" Step="0.01" Error="@(context.GetValidationMessage(() => Product.Price))" />
         </div>
         <div class="mb-2">
-            <InputSelectFormComponent Label="Kind" @bind-Value="@Product.ProductKind" TData="string"
+            <InputSelectFormComponent Id="Kind" Label="Kind" @bind-Value="@Product.ProductKind" TData="string"
                     Options="@(new Dictionary<string, string> { { "Pizza", "Pizza" } , { "MainDish", "MainDish" } , { "Soup", "Soup" } })" />
             <ValidationMessage For="@(() => Product.ProductKind)" />
         </div>

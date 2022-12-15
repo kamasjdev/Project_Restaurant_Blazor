@@ -31,9 +31,9 @@ else
     }
     else
     {
-        @if (!string.IsNullOrWhiteSpace(_error))
+        @if (!string.IsNullOrWhiteSpace(Error))
         {
-            <ErrorComponent Text="@_error" />
+            <ErrorComponent Text="@Error" />
         }
         <ProductFormComponent Product="Product" OnSend="Send" OnCancelClickButton='() => NavigationManager.NavigateTo("/additions")' />
     }
@@ -43,8 +43,8 @@ else
     [Parameter]
     public Guid Id { get; set; }
     public ProductDto? Product { get; set; }
-    private bool Loading { get; set; } = true;
-    private string _error = "";
+    public bool Loading { get; set; } = true;
+    public string Error = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -61,11 +61,11 @@ else
 
                 if (status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
                 {
-                    _error = status.Detail;
+                    Error = status.Detail;
                 }
                 else
                 {
-                    _error = "Something bad happen please try again later";
+                    Error = "Something bad happen please try again later";
                 }
             }
 
@@ -78,7 +78,7 @@ else
     {
         try
         {
-            _error = "";
+            Error = "";
             await ProductService.UpdateAsync(productDto);
             NavigationManager.NavigateTo("/products");
         }
@@ -90,11 +90,11 @@ else
 
                 if (status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
                 {
-                    _error = status.Detail;
+                    Error = status.Detail;
                 }
                 else
                 {
-                    _error = "Something bad happen please try again later";
+                    Error = "Something bad happen please try again later";
                 }
             }
 
