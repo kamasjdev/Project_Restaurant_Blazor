@@ -5,10 +5,10 @@
 <EditForm Model="@FormToSend" OnValidSubmit="@HandleValidSubmit">
     <div>
         <div class="mb-2">
-            <InputTextFormComponent Label="Name" Value="@FormToSend.AdditionName.Value" ValueChanged="(v) => ValidateAdditionName(v)" ValueExpression="@(() => FormToSend.AdditionName.Value)" Error="@FormToSend.AdditionName.Error" />
+            <InputTextFormComponent Id="AdditionName" Label="Name" Value="@FormToSend.AdditionName.Value" ValueChanged="(v) => ValidateAdditionName(v)" ValueExpression="@(() => FormToSend.AdditionName.Value)" Error="@FormToSend.AdditionName.Error" />
         </div>
         <div class="mb-2">
-            <InputNumberFormComponent Label="Price" Value="@FormToSend.Price.Value" ValueChanged="(v) => ValidatePrice(v)" ValueExpression="@(() => FormToSend.Price.Value)" Error="@FormToSend.Price.Error" Step="0.01" />
+            <InputNumberFormComponent Id="Price" Label="Price" Value="@FormToSend.Price.Value" ValueChanged="(v) => ValidatePrice(v)" ValueExpression="@(() => FormToSend.Price.Value)" Error="@FormToSend.Price.Error" Step="0.01" />
         </div>
         <div class="mb-2">
             <InputSelectFormComponent Label="Kind" Value="@FormToSend.AdditionKind.Value" TData="string" ValueChanged="(v) => ValidateAdditionKind(v)"

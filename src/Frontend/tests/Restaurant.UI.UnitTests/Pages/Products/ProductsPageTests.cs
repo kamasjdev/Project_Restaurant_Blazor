@@ -1,7 +1,5 @@
-﻿using AngleSharp;
-using AngleSharp.Dom;
+﻿using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
-using Grpc.Core;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute.ExceptionExtensions;
@@ -9,7 +7,6 @@ using Restaurant.UI.DTO;
 using Restaurant.UI.Pages.Products;
 using Restaurant.UI.Services.Abstractions;
 using Restaurant.UI.UnitTests.Common;
-using System.ComponentModel;
 using System.Security.Claims;
 
 namespace Restaurant.UI.UnitTests.Pages.Products
