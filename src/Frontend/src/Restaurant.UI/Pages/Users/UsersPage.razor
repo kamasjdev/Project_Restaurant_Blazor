@@ -45,7 +45,7 @@ else
         <ModalComponent Title="Delete Addition" OnClose="CloseModal">
             <Body>
                 <div class="text-info-delete">
-                    Do you wish to delete addition @_userToDelete?.Email with id @_userToDelete?.Id
+                    Do you wish to delete user @_userToDelete?.Email with id @_userToDelete?.Id
                 </div>
                 @if (!string.IsNullOrWhiteSpace(_errorDeleteRequest))
                 {

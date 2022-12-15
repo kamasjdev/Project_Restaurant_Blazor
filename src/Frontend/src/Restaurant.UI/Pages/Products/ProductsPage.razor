@@ -27,11 +27,11 @@
 else
 {
     
-    @if (!string.IsNullOrWhiteSpace(_error))
+    @if (!string.IsNullOrWhiteSpace(Error))
     {
-	    <ErrorComponent Text="@_error" />
+	    <ErrorComponent Text="@Error" />
     }
-    <TableComponent Items="products">
+    <TableComponent Items="Products">
         <DataColumn TRowData="ProductDto" Title="Id" Expression="p => p.Id" />
         <DataColumn TRowData="ProductDto" Title="Name" Expression="p => p.ProductName" />
         <DataColumn TRowData="ProductDto" Title="Price" Expression="p => p.Price" Format="{0:0.00}" />
@@ -59,11 +59,11 @@ else
     <ModalComponent Title="Delete Product" OnClose="CloseModal">
         <Body>
             <div class="text-info-delete">
-                Do you wish to delete addition @ProductToDelete?.ProductName with id @ProductToDelete?.Id
+                Do you wish to delete product @ProductToDelete?.ProductName with id @ProductToDelete?.Id
             </div>
-            @if (!string.IsNullOrWhiteSpace(_errorDeleteRequest))
+            @if (!string.IsNullOrWhiteSpace(ErrorDeleteRequest))
             {
-                <ErrorComponent Text="@_errorDeleteRequest" />
+                <ErrorComponent Text="@ErrorDeleteRequest" />
             }
         </Body>
         <Footer>
@@ -78,34 +78,32 @@ else
 }
 
 @code {
-    private ICollection<ProductDto>? products;
-    private ProductDto? ProductToDelete;
-    private string _error = "";
-    private string _errorDeleteRequest = "";
+    public ICollection<ProductDto>? Products;
+    public ProductDto? ProductToDelete;
+    public string Error = "";
+    public string ErrorDeleteRequest = "";
 
-    private bool IsModalOpen { get; set; } = false;
-    private bool Loading { get; set; }
+    public bool IsModalOpen { get; set; } = false;
+    public bool Loading { get; set; }
 
     private async Task FetchProducts()
     {
         Loading = true;
         try
         {   
-            products = new List<ProductDto>(await ProductService.GetAllAsync());
+            Products = new List<ProductDto>(await ProductService.GetAllAsync());
         }
         catch (Exception exception)
         {
+            Error = "Something bad happen please try again later";
+
             if (exception is RpcException)
             {
                 var status = ((RpcException)exception).Status;
 
                 if (status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
                 {
-                    _error = status.Detail;
-                }
-                else
-                {
-                    _error = "Something bad happen please try again later";
+                    Error = status.Detail;
                 }
             }
 
@@ -124,13 +122,13 @@ else
     {
         IsModalOpen = true;
         ProductToDelete = productDto;
-        _errorDeleteRequest = "";
+        ErrorDeleteRequest = "";
     }
 
     private void CloseModal()
     {
         IsModalOpen = false;
-        _errorDeleteRequest = "";
+        ErrorDeleteRequest = "";
         ProductToDelete = null;
     }
 
@@ -138,7 +136,7 @@ else
     {
         try
         {
-            _errorDeleteRequest = "";
+            ErrorDeleteRequest = "";
             await ProductService.DeleteAsync(ProductToDelete.Id);
             CloseModal();
             await FetchProducts();
@@ -151,11 +149,11 @@ else
 
                 if (status.StatusCode is StatusCode.PermissionDenied or StatusCode.FailedPrecondition)
                 {
-                    _errorDeleteRequest = status.Detail;
+                    ErrorDeleteRequest = status.Detail;
                 }
                 else
                 {
-                    _errorDeleteRequest = "Something bad happen please try again later";
+                    ErrorDeleteRequest = "Something bad happen please try again later";
                 }
             }
 
