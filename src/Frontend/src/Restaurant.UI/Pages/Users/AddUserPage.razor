@@ -17,10 +17,10 @@
     <DataAnnotationsValidator />
 
     <div class="mb-2">
-        <InputTextFormComponent Label="Email" Type="InputTextFormType.Email" @bind-Value="_form.Email" Error="@(GetValidationMessage(context, () => _form.Email))" />
+        <InputTextFormComponent Label="Email" Type="InputTextFormType.Email" @bind-Value="_form.Email" Error="@(context.GetValidationMessage(() => _form.Email))" />
     </div>
     <div class="mb-2">
-        <InputTextFormComponent Label="Password" Type="InputTextFormType.Password" @bind-Value="_form.Password" Error="@(GetValidationMessage(context, () => _form.Password))" />
+        <InputTextFormComponent Label="Password" Type="InputTextFormType.Password" @bind-Value="_form.Password" Error="@(context.GetValidationMessage(() => _form.Password))" />
     </div>
     <div class="mb-2">
         <InputSelectFormComponent Label="Role" @bind-Value="@_form.Role" TData="string"
@@ -65,12 +65,6 @@
         _form.Role = _roles.First().Value;
         _editContext = new(_form);
         base.OnInitialized();
-    }
-
-    private string GetValidationMessage(EditContext editContext, Expression<Func<object>> field)
-    {
-        var validationMessage = editContext.GetValidationMessages(field).FirstOrDefault();
-        return validationMessage ?? "";
     }
 
     private async Task HandleValidSubmit()

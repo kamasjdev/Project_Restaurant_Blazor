@@ -6,6 +6,7 @@
 @using Restaurant.UI.DTO;
 @using System.ComponentModel.DataAnnotations;
 @using System.Linq.Expressions;
+@using Restaurant.UI.Pages;
 @using Restaurant.UI.Services.Abstractions;
 @inject IProductSaleService ProductSaleService;
 @inject ILogger<OrderEditComponent> Logger;
@@ -23,7 +24,7 @@ else
 
     <EditForm EditContext="@_editContext" OnValidSubmit="@HandleValidSubmit">
         <InputTextFormComponent Label="Email" Type="InputTextFormType.Email" @bind-Value="@_form.Email"
-                            Error="@(GetValidationMessage(context, () => _form.Email))" />
+                            Error="@(context.GetValidationMessage(() => _form.Email))" />
         <div class="form-group">
             <label class="d-flex" for="text-area-notes">Note</label>
             <textarea id="text-area-notes" class="form-control text-area" @bind="@_form.Note" maxlength="5000" />
@@ -145,12 +146,6 @@ else
         _form = new Form { Email = Order.Email, Note = Order.Note, ProductSales = new List<ProductSaleDto>(Order.Products) };
         _editContext = new(_form);
         base.OnInitialized();
-    }
-
-    private string GetValidationMessage(EditContext editContext, Expression<Func<object>> field)
-    {
-        var validationMessage = editContext.GetValidationMessages(field).FirstOrDefault();
-        return validationMessage ?? "";
     }
 
     private async Task HandleValidSubmit()

@@ -10,107 +10,103 @@
 @if (!string.IsNullOrWhiteSpace(Errors))
 {
     <ErrorComponent Text="@Errors" />
-    <NavigationButtonComponent Text="Go back to Home" Url="/" />
 }
-else
-{
-    <div class="info-text mb-2">
-        Products:
-    </div>
-    <div class="item-list mb-2">
-        @foreach (var product in Products)
-        {
-            <div class="me-2 mb-2">
-                <ProductViewComponent CssClass="@(_productToAdd is not null && _productToAdd.Id == product.Id ? "bg-info" : "")" Product="product" OnClick="() => ProductChoosed(product)" />
-            </div>
-        }
-    </div>
-    <div class="info-text mb-2">
-        Additions:
-    </div>
-    <div class="item-list mb-2">
-        @foreach(var addition in Additions)
-        {
-            <div class="me-2 mb-2">
-                <AdditionViewComponent CssClass="@(_additionToAdd is not null && _additionToAdd.Id == addition.Id ? "bg-info" : "")" Addition="addition" OnClick="() => AdditionChoosed(addition)" />
-            </div>
-        }
-    </div>
+<div class="info-text mb-2">
+    Products:
+</div>
+<div class="item-list mb-2">
+    @foreach (var product in Products)
+    {
+        <div class="me-2 mb-2">
+            <ProductViewComponent CssClass="@(_productToAdd is not null && _productToAdd.Id == product.Id ? "bg-info" : "")" Product="product" OnClick="() => ProductChoosed(product)" />
+        </div>
+    }
+</div>
+<div class="info-text mb-2">
+    Additions:
+</div>
+<div class="item-list mb-2">
+    @foreach(var addition in Additions)
+    {
+        <div class="me-2 mb-2">
+            <AdditionViewComponent CssClass="@(_additionToAdd is not null && _additionToAdd.Id == addition.Id ? "bg-info" : "")" Addition="addition" OnClick="() => AdditionChoosed(addition)" />
+        </div>
+    }
+</div>
+<div class="mb-2">
+    <button class="btn btn-success  @(_productToAdd is not null ? "" : "disabled")" @onclick="() => AddProductSale()">
+        Add to Order
+    </button>
+</div>
+<div>
     <div class="mb-2">
-        <button class="btn btn-success  @(_productToAdd is not null ? "" : "disabled")" @onclick="() => AddProductSale()">
-            Add to Order
+        <button class="btn btn-danger @(_productSaleToDelete == Guid.Empty ? "disabled" : "")" @onclick="() => DeleteProductSale()">
+            Delete
         </button>
     </div>
-    <div>
-        <div class="mb-2">
-            <button class="btn btn-danger @(_productSaleToDelete == Guid.Empty ? "disabled" : "")" @onclick="() => DeleteProductSale()">
-                Delete
-            </button>
-        </div>
-        <table class="table table-striped table-hover table-bordered">
-            <thead class="table-dark">
-                <tr>
-                    <td>Id</td>
-                    <td>Product Id</td>
-                    <td>Product Name</td>
-                    <td>Addition Id</td>
-                    <td>Addition Name</td>
-                    <td>Cost</td>
+    <table class="table table-striped table-hover table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <td>Id</td>
+                <td>Product Id</td>
+                <td>Product Name</td>
+                <td>Addition Id</td>
+                <td>Addition Name</td>
+                <td>Cost</td>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var productSale in _productSales)
+            {
+                <tr @onclick="() => MarkToDelete(productSale)" class="@(_productSaleToDelete == productSale.Id ? "bg-success" : "")">
+                    <td>
+                        @productSale.Id
+                    </td>
+                    <td>
+                        @productSale.Product.Id
+                    </td>
+                    <td>
+                        @productSale.Product.ProductName
+                    </td>
+                    <td>
+                        @(productSale.Addition is not null ? productSale.Addition.Id : "-")
+                    </td>
+                    <td>
+                        @(productSale.Addition is not null ? productSale.Addition.AdditionName : "-")
+                    </td>
+                    <td>
+                        @productSale.EndPrice
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                @foreach (var productSale in _productSales)
-                {
-                    <tr @onclick="() => MarkToDelete(productSale)" class="@(_productSaleToDelete == productSale.Id ? "bg-success" : "")">
-                        <td>
-                            @productSale.Id
-                        </td>
-                        <td>
-                            @productSale.Product.Id
-                        </td>
-                        <td>
-                            @productSale.Product.ProductName
-                        </td>
-                        <td>
-                            @(productSale.Addition is not null ? productSale.Addition.Id : "-")
-                        </td>
-                        <td>
-                            @(productSale.Addition is not null ? productSale.Addition.AdditionName : "-")
-                        </td>
-                        <td>
-                            @productSale.EndPrice
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+            }
+        </tbody>
+    </table>
+</div>
+<div class="text-start w-25">
+    <table class="table mt-2">
+        <thead>
+            <tr>
+                <th scope="col">Total Cost</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>@_productSales.Sum(p => p.EndPrice).ToString("0.00")</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<div class="mt-2">
+    <div class="info-text">
+        Notes:
     </div>
-    <div class="text-start w-25">
-        <table class="table mt-2">
-            <thead>
-                <tr>
-                    <th scope="col">Total Cost</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>@_productSales.Sum(p => p.EndPrice).ToString("0.00")</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    <div class="mt-2">
-        <div class="info-text">
-            Notes:
-        </div>
-        <textarea class="form-control text-area" @bind="@_note" maxlength="5000" />
-    </div>
-    <div class="mt-4 mb-2 text-center">
-        <button class="btn btn-primary @(!_productSales.Any() ? "disabled" : "")" @onclick="() => CreateOrder()">
-            Create Order
-        </button>
-    </div>
-}
+    <textarea class="form-control text-area" @bind="@_note" maxlength="5000" />
+</div>
+<div class="mt-4 mb-2 text-center">
+    <button class="btn btn-primary @(!_productSales.Any() ? "disabled" : "")" @onclick="() => CreateOrder()">
+        Create Order
+    </button>
+</div>
 
 @code {
     [Parameter]

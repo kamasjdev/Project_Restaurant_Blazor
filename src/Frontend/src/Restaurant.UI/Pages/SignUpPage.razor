@@ -21,16 +21,16 @@
 </AuthorizeView>
 
 
-@if (!string.IsNullOrWhiteSpace(_error))
+@if (!string.IsNullOrWhiteSpace(Error))
 {
-    <ErrorComponent Text="@_error" />
+    <ErrorComponent Text="@Error" />
 }
-<EditForm EditContext="@editContext" OnValidSubmit="@HandleValidSubmit">
+<EditForm EditContext="@EditContext" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
 
-    <InputTextFormComponent Label="Email" Type="InputTextFormType.Email" @bind-Value="Form.Email" Error="@(GetValidationMessage(context, () => Form.Email))" />
-    <InputTextFormComponent Label="Password" Type="InputTextFormType.Password" @bind-Value="Form.Password" Error="@(GetValidationMessage(context, () => Form.Password))" />
-    <InputTextFormComponent Label="Confirm Password" Type="InputTextFormType.Password" @bind-Value="Form.ConfirmPassword" Error="@(GetValidationMessage(context, () => Form.ConfirmPassword))" />
+    <InputTextFormComponent Label="Email" Type="InputTextFormType.Email" @bind-Value="Form.Email" Error="@(context.GetValidationMessage(() => Form.Email))" />
+    <InputTextFormComponent Id="password" Label="Password" Type="InputTextFormType.Password" @bind-Value="Form.Password" Error="@(context.GetValidationMessage(() => Form.Password))" />
+    <InputTextFormComponent Id="confirm-password" Label="Confirm Password" Type="InputTextFormType.Password" @bind-Value="Form.ConfirmPassword" Error="@(context.GetValidationMessage(() => Form.ConfirmPassword))" />
     <div class="mt-2">
         <button class="btn btn-success" type="submit">Register</button>
         <NavigationButtonComponent Text="Cancel" Url="/" />
@@ -41,11 +41,11 @@
 @code {
 
     public bool Loading { get; set; }
-    private SignInForm Form { get; set; } = new();
-    private EditContext? editContext;
-    private string? _error;
+    public SignInForm Form { get; set; } = new();
+    public EditContext? EditContext;
+    public string? Error;
 
-    private class SignInForm
+    public class SignInForm
     {
         [Required]
         [EmailAddress]
@@ -63,26 +63,20 @@
 
     protected override void OnInitialized()
     {
-        editContext = new(Form);
+        EditContext = new(Form);
         base.OnInitialized();
-    }
-
-    private string GetValidationMessage(EditContext editContext, Expression<Func<object>> field)
-    {
-        var validationMessage = editContext.GetValidationMessages(field).FirstOrDefault();
-        return validationMessage ?? "";
     }
 
     private async Task HandleValidSubmit()
     {
-        _error = "";
-        if (editContext is null)
+        Error = "";
+        if (EditContext is null)
         {
-            _error = "Something bad happen, please try again later";
+            Error = "Something bad happen, please try again later";
             return;
         }
 
-        if (!editContext.Validate())
+        if (!EditContext.Validate())
         {
             return;
         }
@@ -100,11 +94,11 @@
 
                 if (status.StatusCode is StatusCode.InvalidArgument or StatusCode.FailedPrecondition)
                 {
-                    _error = status.Detail;
+                    Error = status.Detail;
                 }
                 else
                 {
-                    _error = "Something bad happen please try again later";
+                    Error = "Something bad happen please try again later";
                 }
             }
 

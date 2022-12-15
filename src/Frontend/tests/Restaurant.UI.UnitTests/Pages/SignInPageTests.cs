@@ -26,7 +26,7 @@ namespace Restaurant.UI.UnitTests.Pages
 
             instance.ShouldNotBeNull();
             instance.EditContext.ShouldNotBeNull();
-            var validationEmailMessages = instance.GetValidationMessage(instance.EditContext, () => instance.Form.Email);
+            var validationEmailMessages = instance.EditContext.GetValidationMessage(() => instance.Form.Email);
             validationEmailMessages.ShouldNotBeNullOrWhiteSpace();
             _component.Markup.ShouldContain(validationEmailMessages);
         }
@@ -42,7 +42,7 @@ namespace Restaurant.UI.UnitTests.Pages
 
             instance.ShouldNotBeNull();
             instance.EditContext.ShouldNotBeNull();
-            var validationPasswordMessages = instance.GetValidationMessage(instance.EditContext, () => instance.Form.Password);
+            var validationPasswordMessages = instance.EditContext.GetValidationMessage(() => instance.Form.Password);
             validationPasswordMessages.ShouldNotBeNullOrWhiteSpace();
             _component.Markup.ShouldContain(validationPasswordMessages);
         }
@@ -57,8 +57,8 @@ namespace Restaurant.UI.UnitTests.Pages
 
             instance.ShouldNotBeNull();
             instance.EditContext.ShouldNotBeNull();
-            var validationEmailMessages = instance.GetValidationMessage(instance.EditContext, () => instance.Form.Email);
-            var validationPasswordMessages = instance.GetValidationMessage(instance.EditContext, () => instance.Form.Password);
+            var validationEmailMessages = instance.EditContext.GetValidationMessage(() => instance.Form.Email);
+            var validationPasswordMessages = instance.EditContext.GetValidationMessage(() => instance.Form.Password);
             validationEmailMessages.ShouldNotBeNullOrWhiteSpace();
             validationPasswordMessages.ShouldNotBeNullOrWhiteSpace();
             _component.Markup.ShouldContain(validationEmailMessages);
@@ -82,6 +82,7 @@ namespace Restaurant.UI.UnitTests.Pages
             var errors = instance.EditContext.GetValidationMessages();
             errors.ShouldBeEmpty();
             instance.Error.ShouldBeNullOrWhiteSpace();
+            await _authenticationService.Received(1).SignInAsync(Arg.Any<SignInDto>());
         }
 
         [Fact]

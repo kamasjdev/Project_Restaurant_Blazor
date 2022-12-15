@@ -1,16 +1,17 @@
 ﻿@using Restaurant.UI.Components.Inputs
 @using Restaurant.UI.DTO;
 @using System.Linq.Expressions;
+@using Restaurant.UI.Pages;
 
 <EditForm Model="@Product" OnValidSubmit="@HandleValidSubmit">
     <FluentValidationValidator @ref="_fluentValidationValidator" />
 
     <div>
         <div class="mb-2">
-            <InputTextFormComponent Label="Name" @bind-Value="@Product.ProductName" Error="@(GetValidationMessage(context, () => Product.ProductName))" />
+            <InputTextFormComponent Label="Name" @bind-Value="@Product.ProductName" Error="@(context.GetValidationMessage(() => Product.ProductName))" />
         </div>
         <div class="mb-2">
-            <InputNumberFormComponent Label="Price" @bind-Value="@Product.Price" Step="0.01" Error="@(GetValidationMessage(context, () => Product.Price))" />
+            <InputNumberFormComponent Label="Price" @bind-Value="@Product.Price" Step="0.01" Error="@(context.GetValidationMessage(() => Product.Price))" />
         </div>
         <div class="mb-2">
             <InputSelectFormComponent Label="Kind" @bind-Value="@Product.ProductKind" TData="string"
@@ -39,12 +40,6 @@
     public Action? OnCancelClickButton { get; set; }
 
     private FluentValidationValidator? _fluentValidationValidator;
-
-    private string GetValidationMessage(EditContext editContext, Expression<Func<object>> field)
-    {
-        var validationMessage = editContext.GetValidationMessages(field).FirstOrDefault();
-        return validationMessage ?? "";
-    }
 
     private async Task HandleValidSubmit()
     {

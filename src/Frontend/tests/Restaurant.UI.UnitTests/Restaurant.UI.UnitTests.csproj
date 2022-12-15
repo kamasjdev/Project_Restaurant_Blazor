@@ -28,4 +28,8 @@
     <ProjectReference Include="..\..\src\Restaurant.UI\Restaurant.UI.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Common\" />
+  </ItemGroup>
+
 </Project>
