@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Restaurant.IntegrationTests.Common
 {
-    internal sealed class TestAppFactory : WebApplicationFactory<Program>
+    public sealed class TestAppFactory : WebApplicationFactory<Program>
     {
         public HttpClient Client { get; }
 

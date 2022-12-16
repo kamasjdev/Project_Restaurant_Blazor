@@ -12,13 +12,13 @@ namespace Restaurant.IntegrationTests.Common
     public abstract class BaseTest : IClassFixture<OptionsProvider>, IDisposable
     {
         protected OptionsProvider OptionsProvider { get; }
-        private readonly TestAppFactory _app;
-        private IServiceScope? _scope;
+        protected readonly TestAppFactory Fixture;
+        protected IServiceScope? Scope;
 
         public BaseTest(OptionsProvider optionsProvider)
         {
             OptionsProvider = optionsProvider;
-            _app = new TestAppFactory(ConfigureServices);
+            Fixture  = new TestAppFactory(ConfigureServices);
         }
 
         protected virtual void ConfigureServices(IServiceCollection services)
@@ -26,18 +26,24 @@ namespace Restaurant.IntegrationTests.Common
             // Configure services if needed
         }
 
+        protected T? GetService<T>()
+        {
+            Scope ??= Fixture.Services.CreateScope();
+            return Scope.ServiceProvider.GetService<T>();
+        }
+
         protected T GetRequiredService<T>() where T : notnull
         {
-            _scope ??= _app.Services.CreateScope();
-            return _scope.ServiceProvider.GetRequiredService<T>();
+            Scope ??= Fixture.Services.CreateScope();
+            return Scope.ServiceProvider.GetRequiredService<T>();
         }
 
 
-        public void Dispose()
+        public virtual void Dispose()
         {
-            _scope ??= _app.Services.CreateScope();
-            var connection = _scope.ServiceProvider.GetRequiredService<DbConnection>();
-            var logger = _scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+            Scope ??= Fixture.Services.CreateScope();
+            var connection = Scope.ServiceProvider.GetRequiredService<DbConnection>();
+            var logger = Scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
             try
             {
@@ -54,20 +60,20 @@ namespace Restaurant.IntegrationTests.Common
             finally
             {
                 logger.LogInformation("Closing connection. Disposing TestAppFactory");
-                _scope.Dispose();
+                Scope.Dispose();
                 connection.Close();
                 connection.Dispose();
-                _app.Dispose();
+                Fixture .Dispose();
                 GC.SuppressFinalize(this);
             }
         }
 
         public async Task<Addition> AddDefaultAdditionAsync()
         {
-            _scope ??= _app.Services.CreateScope();
+            Scope ??= Fixture.Services.CreateScope();
             var count = Enum.GetNames<AdditionKind>().Length - 1;
             var random = new Random();
-            var additonRepository = _scope.ServiceProvider.GetRequiredService<IAdditonRepository>();
+            var additonRepository = Scope.ServiceProvider.GetRequiredService<IAdditonRepository>();
             var addition = new Addition(Guid.NewGuid(), $"Addition-{Guid.NewGuid()}", 100M, (AdditionKind)random.Next(0, count));
             await additonRepository.AddAsync(addition);
             return addition;
@@ -75,10 +81,10 @@ namespace Restaurant.IntegrationTests.Common
 
         public async Task<Product> AddDefaultProductAsync()
         {
-            _scope ??= _app.Services.CreateScope();
+            Scope ??= Fixture.Services.CreateScope();
             var count = Enum.GetNames<ProductKind>().Length - 1;
             var random = new Random();
-            var productRepository = _scope.ServiceProvider.GetRequiredService<IProductRepository>();
+            var productRepository = Scope.ServiceProvider.GetRequiredService<IProductRepository>();
             var product = new Product(Guid.NewGuid(), $"Product-{Guid.NewGuid()}", 100M, (ProductKind)random.Next(0, count));
             await productRepository.AddAsync(product);
             return product;
@@ -86,10 +92,10 @@ namespace Restaurant.IntegrationTests.Common
 
         public async Task<ProductSale> AddDefaultProductSaleAsync(EntityId productId, decimal endPrice, Email email, EntityId? additionId = null, EntityId? orderId = null)
         {
-            _scope ??= _app.Services.CreateScope();
+            Scope ??= Fixture.Services.CreateScope();
             var count = Enum.GetNames<ProductKind>().Length - 1;
             var random = new Random();
-            var productSaleRepository = _scope.ServiceProvider.GetRequiredService<IProductSaleRepository>();
+            var productSaleRepository = Scope.ServiceProvider.GetRequiredService<IProductSaleRepository>();
             var productSale = new ProductSale(Guid.NewGuid(), productId, (ProductSaleState)random.Next(0, count), endPrice, email, additionId, orderId);
             await productSaleRepository.AddAsync(productSale);
             return productSale;
@@ -98,9 +104,9 @@ namespace Restaurant.IntegrationTests.Common
         public async Task<Order> AddDefaultOrderAsync(Email email, IEnumerable<ProductSale>? productSales = null)
         {
             productSales ??= new List<ProductSale>();
-            _scope ??= _app.Services.CreateScope();
-            var orderRepository = _scope.ServiceProvider.GetRequiredService<IOrderRepository>();
-            var productSaleRepository = _scope.ServiceProvider.GetRequiredService<IProductSaleRepository>();
+            Scope ??= Fixture.Services.CreateScope();
+            var orderRepository = Scope.ServiceProvider.GetRequiredService<IOrderRepository>();
+            var productSaleRepository = Scope.ServiceProvider.GetRequiredService<IProductSaleRepository>();
             var order = new Order(Guid.NewGuid(), $"Order-{Guid.NewGuid().ToString("N")}", DateTime.UtcNow, productSales.Sum(p => p.EndPrice), email);
             order.AddProducts(productSales);
             await orderRepository.AddAsync(order);
@@ -117,9 +123,9 @@ namespace Restaurant.IntegrationTests.Common
 
         public async Task<User> AddDefaultUserAsync(Email email)
         {
-            _scope ??= _app.Services.CreateScope();
+            Scope ??= Fixture.Services.CreateScope();
             var user = new User(Guid.NewGuid(), email, "DefaultPaswword", User.Roles.UserRole, DateTime.UtcNow);
-            var userRepository = _scope.ServiceProvider.GetRequiredService<IUserRepository>();
+            var userRepository = Scope.ServiceProvider.GetRequiredService<IUserRepository>();
             await userRepository.AddAsync(user);
             return user;
         }
