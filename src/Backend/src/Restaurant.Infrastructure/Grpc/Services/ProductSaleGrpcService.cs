@@ -66,7 +66,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 					new Addition { Id = productSale.Addition.Id.ToString(), AdditionName = productSale.Addition.AdditionName, AdditionKind = productSale.Addition.AdditionKind, Price = productSale.Addition.Price.ToString() }
 					: null,
 				Order = productSale.Order is not null ?
-					new Order { Id = productSale.Order.Id.ToString(), Email = productSale.Order.Email, Created = Timestamp.FromDateTime(productSale.Order.Created), OrderNumber = productSale.Order.OrderNumber, Price = productSale.Order.Price.ToString(), Note = productSale.Order.Note }
+					new Order { Id = productSale.Order.Id.ToString(), Email = productSale.Order.Email, Created = Timestamp.FromDateTime(productSale.Order.Created), OrderNumber = productSale.Order.OrderNumber, Price = productSale.Order.Price.ToString(), Note = productSale.Order.Note ?? "" }
 					: null
 			};
 		}

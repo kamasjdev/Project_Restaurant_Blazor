@@ -35,7 +35,7 @@ namespace Restaurant.IntegrationTests.Common
 
         private void SetBearerToken()
         {
-            var authManager = GetService<IJwtManager>();
+            var authManager = GetRequiredService<IJwtManager>();
             var user = TestData.GetAdminUser();
             _token = authManager.CreateToken(user.Id, user.Role, user.Email.Value);
         }

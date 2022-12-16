@@ -70,7 +70,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 				OrderNumber = order.OrderNumber,
 				Price = order.Price.ToString(),
 				Created = Timestamp.FromDateTime(order.Created),
-				Note = order.Note
+				Note = order.Note ?? ""
 			};
 			response.Products.AddRange(order.Products.Select(p => new ProductSale
 			{
