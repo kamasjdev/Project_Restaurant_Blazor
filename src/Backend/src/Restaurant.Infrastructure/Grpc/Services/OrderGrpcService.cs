@@ -99,7 +99,7 @@ namespace Restaurant.Infrastructure.Grpc.Services
 				Email = o.Email,
 				Price = o.Price.ToString(),
 				Created = Timestamp.FromDateTime(o.Created),
-				Note = o.Note
+				Note = o.Note ?? ""
 			}));
 			return response;
 		}

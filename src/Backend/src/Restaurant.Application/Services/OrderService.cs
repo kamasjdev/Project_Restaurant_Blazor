@@ -83,13 +83,11 @@ namespace Restaurant.Application.Services
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                await _orderRepository.DeleteAsync(order);
-
                 foreach (var product in order.Products)
                 {
                     await _productSaleRepository.UpdateAsync(product);
                 }
-
+                await _orderRepository.DeleteAsync(order);
                 await _unitOfWork.CommitAsync();
             }
             catch
