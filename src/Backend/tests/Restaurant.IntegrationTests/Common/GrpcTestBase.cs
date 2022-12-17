@@ -40,6 +40,11 @@ namespace Restaurant.IntegrationTests.Common
             _token = authManager.CreateToken(user.Id, user.Role, user.Email.Value);
         }
 
+        protected void SetAnnonymous()
+        {
+            _token = "";
+        }
+
         public override void Dispose()
         {
             _channel = null;
