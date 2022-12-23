@@ -14,7 +14,11 @@ Project was created to contains common data which could be used by backend and f
 Client application was written using C# and Blazor library. Project also contains unit tests, which tests pages and components. Client project structure divide into components, and pages. Components dont have specific logic, the logic is dedidcaded only to pages. For better testing created interfaces which send receive data from backend using gRPC Web protocol. Unit tests was written using bUnit library.
 
 # Technologies
-
+- Net 7
+- MySQL
+- Dapper
+- Blazor
+- gRPC
 - xUnit
 - bUnit
 - Shouldly
