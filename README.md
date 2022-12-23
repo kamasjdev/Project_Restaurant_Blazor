@@ -32,3 +32,27 @@ Client application was written using C# and Blazor library. Project also contain
 <p align="center">
   <img src="screen2.png">
 </p>
+
+<p align="center">
+  <img src="screen3.png">
+</p>
+
+<p align="center">
+  <img src="screen4.png">
+</p>
+
+<p align="center">
+  <img src="screen5.png">
+</p>
+
+<p align="center">
+  <img src="screen6.png">
+</p>
+
+<p align="center">
+  <img src="screen7.png">
+</p>
+
+<p align="center">
+  <img src="screen8.png">
+</p>
