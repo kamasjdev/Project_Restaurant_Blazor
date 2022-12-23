@@ -56,3 +56,11 @@ Client application was written using C# and Blazor library. Project also contain
 <p align="center">
   <img src="screen8.png">
 </p>
+
+<p align="center">
+  <img src="screen9.png">
+</p>
+
+<p align="center">
+  <img src="screen10.png">
+</p>
