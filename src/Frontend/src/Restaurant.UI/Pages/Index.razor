@@ -3,15 +3,13 @@
 
 <PageTitle>Index</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Welcome to Restaurant App!</h1>
 
 <AuthorizeView>
     <Authorized Context="Auth">
-        Welcome @Auth.User.Claims.Where(c => c.Type == ClaimTypes.Email).SingleOrDefault()?.Value to Resturant app.
+        <SurveyPrompt Title="Welcome" Description='@($"Welcome {Auth.User.Claims.Where(c => c.Type == ClaimTypes.Email).SingleOrDefault()?.Value}, if you wish you can order foods just go to nav Create Order")' />
     </Authorized>
     <NotAuthorized>
-        Welcome to Resturant app.
+        <SurveyPrompt Title="How to order food?" Description="Only authorized users can order foods. If you wish to order food, please login. If you dont have account and wish to order food, please register and login." />
     </NotAuthorized>
 </AuthorizeView>
-
-<SurveyPrompt Title="How is Blazor working for you?" />
