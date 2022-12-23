@@ -11,8 +11,12 @@ Server was divided into 7 projects including tests projects: Api, Application, C
 Project was created to contains common data which could be used by backend and frontend like for example gRPC proto files. They are used to communicate with backend with frontend and vice versa.
 
 # Client
-Client application was written using C# and Blazor library. Project also contains unit tests, which tests pages and components. Client project structure divide into components, and pages. Components dont have specific logic, the logic is dedidcaded only to pages. For better testing created interfaces which send receive data from backend.
+Client application was written using C# and Blazor library. Project also contains unit tests, which tests pages and components. Client project structure divide into components, and pages. Components dont have specific logic, the logic is dedidcaded only to pages. For better testing created interfaces which send receive data from backend using gRPC Web protocol. Unit tests was written using bUnit library.
 
 # Technologies
 
-# Project
+- xUnit
+- bUnit
+- Shouldly
+
+# Screens
